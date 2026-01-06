@@ -105,7 +105,9 @@ compile: $(DIST_DIR)
 	@# Crear enlace simbólico de ASM/dist a DIST_DIR
 	@rm -rf "$(8BP_ASM_PATH)/dist"
 	@mkdir -p "$(DIST_DIR)"
-	@ln -sf "$(shell cd $(DIST_DIR) && pwd)" "$(8BP_ASM_PATH)/dist"
+	@# Asegurarse de que DIST_DIR existe antes de crear el enlace
+	@DIST_ABS=$$(cd "$(DIST_DIR)" 2>/dev/null && pwd || (mkdir -p "$(DIST_DIR)" && cd "$(DIST_DIR)" && pwd)); \
+	ln -sf "$$DIST_ABS" "$(8BP_ASM_PATH)/dist"
 	@$(COMPILE_SCRIPT) $(BUILD_LEVEL) "$(8BP_ASM_PATH)" "$(ABASM_PATH)"
 	@# Verificar que el binario se generó correctamente
 	@if [ -f "$(DIST_DIR)/8BP$(BUILD_LEVEL).bin" ]; then \
