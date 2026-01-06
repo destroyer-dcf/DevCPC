@@ -43,7 +43,7 @@ if [ ! -d "$ASM_DIR" ]; then
 fi
 
 echo -e "${BLUE}═══════════════════════════════════════${NC}"
-echo -e "${BLUE}  BUILD8BP - Patch${NC}"
+echo -e "${BLUE}  8BP - Patch${NC}"
 echo -e "${BLUE}═══════════════════════════════════════${NC}"
 echo ""
 echo -e "${CYAN}Directorio ASM:${NC} $ASM_DIR"

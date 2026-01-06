@@ -254,8 +254,3 @@ fi
 - [Documentación de ABASM](https://github.com/fragarco/abasc/blob/main/docs/es/abasc.md)
 - [Manual 8BP](https://github.com/jjaranda13/8BP/blob/master/Documentacion/manual/8bp_v043_r00_ES.pdf)
 
-## Historial de cambios
-
-- **v1.0** - Parches iniciales: `and a,`, `or a,`, `xor a,`, `djnz,`, `ifnot`
-- **v1.1** - Soporte para espacios después de coma en `djnz`
-- **v1.2** - Procesamiento de todos los archivos `.asm`

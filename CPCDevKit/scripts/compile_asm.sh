@@ -104,7 +104,7 @@ esac
 
 echo ""
 echo -e "${BLUE}═══════════════════════════════════════${NC}"
-echo -e "${BLUE}  BUILD8BP - Build $BUILD_LEVEL${NC}"
+echo -e "${BLUE}  8BP - Build $BUILD_LEVEL${NC}"
 echo -e "${BLUE}═══════════════════════════════════════${NC}"
 echo ""
 echo -e "${CYAN}Descripción:${NC}     $DESC"
@@ -199,7 +199,7 @@ if $PYTHON_CMD "$ABASM_PATH" "$BUILD_FILE" --tolerance 2; then
         SIZE_FORMATTED=$(printf "%'d" $SIZE 2>/dev/null || echo $SIZE)
         
         echo ""
-        echo -e "${GREEN}✓ Compilación exitosa!${NC}"
+        echo -e "${GREEN}✓ Compilación successful!${NC}"
         echo -e "${GREEN}  Archivo:    8BP${BUILD_LEVEL}.bin${NC}"
         echo -e "${GREEN}  Ubicación:  $DIST_BIN${NC}"
         echo -e "${GREEN}  Tamaño:     $SIZE_FORMATTED bytes${NC}"
@@ -210,7 +210,7 @@ if $PYTHON_CMD "$ABASM_PATH" "$BUILD_FILE" --tolerance 2; then
         echo -e "  CALL &6B78"
         echo ""
     else
-        echo -e "${YELLOW}Advertencia: No se encontró el binario 8BP${BUILD_LEVEL}.bin${NC}"
+        echo -e "${YELLOW}Advertencia: No se encontró el binario 8BP${BUILD_LEVEL}.bin${NC}\n"
     fi
     
 else

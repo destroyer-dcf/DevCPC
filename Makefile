@@ -11,6 +11,4 @@ include $(MAKEFILE_DIR)/CPCDevKit/cfg/Makefile.mk
 # Descomenta y ajusta según tu proyecto:
 
 8BP_ASM_PATH := "/Users/destroyer/Downloads/IDE_8BP222222/IDE_8BP/Proyecto/8BP_V43/ASM"
-# ABASM_PATH := ./mi_proyecto/abasm/src/abasm.py
-# BUILD_LEVEL := 1
 DIST_DIR := ./dist

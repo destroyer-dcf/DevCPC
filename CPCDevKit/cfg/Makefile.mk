@@ -44,7 +44,7 @@ all: info patch compile
 help:
 	@echo ""
 	@echo "$(BLUE)═══════════════════════════════════════$(NC)"
-	@echo "$(BLUE)  BUILD8BP - Makefile$(NC)"
+	@echo "$(BLUE)  8BP - Makefile$(NC)"
 	@echo "$(BLUE)═══════════════════════════════════════$(NC)"
 	@echo ""
 	@echo "$(CYAN)Uso:$(NC)"
@@ -82,7 +82,7 @@ help:
 info:
 	@echo ""
 	@echo "$(BLUE)═══════════════════════════════════════$(NC)"
-	@echo "$(BLUE)  BUILD8BP - Configuración$(NC)"
+	@echo "$(BLUE)  8BP - Configuración$(NC)"
 	@echo "$(BLUE)═══════════════════════════════════════$(NC)"
 	@echo ""
 	@echo "$(CYAN)Directorio ASM:$(NC)     $(8BP_ASM_PATH)"
@@ -101,7 +101,7 @@ patch:
 
 # Compilar con el nivel especificado
 compile: $(DIST_DIR)
-	@echo "$(YELLOW)Compilando nivel $(BUILD_LEVEL)...$(NC)"
+	@echo "$(YELLOW)\nCompilando nivel $(BUILD_LEVEL)...$(NC)"
 	@# Crear enlace simbólico de ASM/dist a DIST_DIR
 	@rm -rf "$(8BP_ASM_PATH)/dist"
 	@mkdir -p "$(DIST_DIR)"
@@ -109,7 +109,7 @@ compile: $(DIST_DIR)
 	@$(COMPILE_SCRIPT) $(BUILD_LEVEL) "$(8BP_ASM_PATH)" "$(ABASM_PATH)"
 	@# Verificar que el binario se generó correctamente
 	@if [ -f "$(DIST_DIR)/8BP$(BUILD_LEVEL).bin" ]; then \
-		echo "$(GREEN)✓ Binario generado: $(DIST_DIR)/8BP$(BUILD_LEVEL).bin ($(shell ls -lh $(DIST_DIR)/8BP$(BUILD_LEVEL).bin 2>/dev/null | awk '{print $$5}'))$(NC)"; \
+		echo "$(GREEN)✓ Binario generado: $(DIST_DIR)/8BP$(BUILD_LEVEL).bin ($(shell ls -lh $(DIST_DIR)/8BP$(BUILD_LEVEL).bin 2>/dev/null | awk '{print $$5}'))$(NC)\n"; \
 	else \
 		echo "$(YELLOW)⚠ Binario no encontrado en dist, buscando...$(NC)"; \
 		if [ -f "$(8BP_ASM_PATH)/8BP$(BUILD_LEVEL).bin" ]; then \
