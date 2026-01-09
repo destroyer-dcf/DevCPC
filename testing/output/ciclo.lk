@@ -1,0 +1,10 @@
+-mjwx
+-i /Volumes/SSD-EXTERNO/GIT/Compiler8BP/bin/Debug/net8.0/output/ciclo.ihx
+-b _CODE = 0x3e80
+-b _DATA = 0x0000
+-k /opt/homebrew/bin/../share/sdcc/lib/z80
+-k /opt/homebrew/Cellar/sdcc/4.5.0/share/sdcc/lib/z80
+-l z80
+/Volumes/SSD-EXTERNO/GIT/Compiler8BP/bin/Debug/net8.0/output/ciclo.rel
+
+-e
