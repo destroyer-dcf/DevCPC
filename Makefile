@@ -10,5 +10,5 @@ include $(MAKEFILE_DIR)/CPCDevKit/cfg/Makefile.mk
 # Sobrescribir variables con valores específicos del proyecto
 # Descomenta y ajusta según tu proyecto:
 
-8BP_ASM_PATH := "/Users/destroyer/PROJECTS/CPCReady/CPCDevKit/testing/8BP_V43/ASM"
-DIST_DIR := "/Users/destroyer/PROJECTS/CPCReady/CPCDevKit/testing/8BP_V43/dist"
+8BP_ASM_PATH := "/Users/destroyer/PROJECTS/CPCReady/CPCDevKit/testing/ASM"
+DIST_DIR := "/Users/destroyer/PROJECTS/CPCReady/CPCDevKit/testing/dist"

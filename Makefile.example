@@ -10,7 +10,9 @@ include $(MAKEFILE_DIR)/CPCDevKit/cfg/Makefile.mk
 # Sobrescribir variables con valores específicos del proyecto
 # Descomenta y ajusta según tu proyecto:
 
+# Ruta al directorio ASM del proyecto
 # 8BP_ASM_PATH := ./mi_proyecto/8BP_V43/ASM
-# ABASM_PATH := ./mi_proyecto/abasm/src/abasm.py
-# BUILD_LEVEL := 1
+
+# Directorio de salida para los binarios compilados
 # DIST_DIR := ./mi_proyecto/dist
+
