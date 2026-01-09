@@ -6,9 +6,6 @@
 # Ruta al directorio ASM (requerido)
 8BP_ASM_PATH ?= ./8BP_V43/ASM
 
-# Versión de ABASM (informativa)
-ABASM_VERSION ?= 1.4.0
-
 # Ruta a abasm.py
 ABASM_PATH ?= $(CURDIR)/Dev8BP/tools/abasm/src/abasm.py
 
@@ -88,7 +85,6 @@ info:
 	@echo ""
 	@echo "$(CYAN)Directorio ASM:$(NC)     $(8BP_ASM_PATH)"
 	@echo "$(CYAN)ABASM:$(NC)              $(ABASM_PATH)"
-	@echo "$(CYAN)ABASM Version:$(NC)      $(ABASM_VERSION)"
 	@echo "$(CYAN)Nivel de build:$(NC)     $(BUILD_LEVEL)"
 	@echo "$(CYAN)Directorio salida:$(NC)  $(DIST_DIR)"
 	@echo "$(CYAN)Python:$(NC)             $(PYTHON)"
