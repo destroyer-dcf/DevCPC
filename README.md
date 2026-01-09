@@ -160,7 +160,7 @@ Ajusta el valor de `MEMORY` según el nivel compilado.
 
 ---
 
-## 📄 Licencia
+## Licencia
 
 MIT License
 
