@@ -154,8 +154,9 @@ Ajusta el valor de `MEMORY` según el nivel compilado.
 - 📌 Generacion DSK
 - 📌 Generacion TAP
 - 📌 Generacion de ROMs
-- 📌 Test/Run Retro Virtual Machine (RVVM)
+- 📌 Test/Run Retro Virtual Machine (RVM)
 - 📌 Test/Run M4Board
+- 📌 Instalador Dev8BP
 - 📌 ....más..
 
 ---
