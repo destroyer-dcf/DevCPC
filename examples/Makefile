@@ -22,8 +22,6 @@
 # SOFTWARE.
 # ==============================================================================
 
-# Copia este archivo como "Makefile" en tu proyecto y ajusta las variables
-
 # Verificar que DEV8BP_PATH está definida
 ifndef DEV8BP_PATH
 $(error DEV8BP_PATH no está definida. Ejecuta setup.sh en el directorio raíz de Dev8BP o añade 'export DEV8BP_PATH=/ruta/a/Dev8bp' a tu .bashrc/.zshrc)
@@ -32,39 +30,31 @@ endif
 # ============================================
 # CONFIGURACIÓN DEL PROYECTO
 # ============================================
-# Ajusta estas variables según tu proyecto
 
-# Nombre del proyecto (usado para el DSK)
-PROJECT_NAME := MI_JUEGO
+PROJECT_NAME := MY_GAME_MOLON
 
 # Nivel de compilación (0-4)
 BUILD_LEVEL := 0
 
-# Ruta al directorio ASM del proyecto
+# Path codigo emsembler 8BP
 ASM_PATH := $(CURDIR)/ASM
 
-# Ruta al directorio BASIC (archivos .bas que se añadirán al DSK)
+# Path archivos BASIC (se añadirán al DSK automáticamente)
 BASIC_PATH := $(CURDIR)/bas
 
-# Directorio de objetos intermedios (bin, lst, map)
+# Path Binario Generado (objetos intermedios)
 OBJ_DIR := obj
 
-# Directorio de salida para DSK
+# Path Binario Generado (DSK final)
 DIST_DIR := dist
 
-# Nombre de la imagen DSK
+# Path imagen DSK
 DSK := $(PROJECT_NAME).dsk
 
-# Configuración RetroVirtualMachine (opcional - para usar 'make run')
-# Descomenta y ajusta la ruta según tu instalación
-# macOS ejemplo:
-# RVM_PATH := /Applications/Retro Virtual Machine 2.app/Contents/MacOS/Retro Virtual Machine 2
-# Linux ejemplo:
-# RVM_PATH := /usr/local/bin/RetroVirtualMachine
-# Windows WSL ejemplo:
-# RVM_PATH := /mnt/c/Program Files/RetroVirtualMachine/RetroVirtualMachine.exe
-# CPC_MODEL := 464
-# RUN_FILE := 8BP0.BIN
+# Configuración RetroVirtualMachine (opcional)
+RVM_PATH := /Applications/Retro Virtual Machine 2.app/Contents/MacOS/Retro Virtual Machine 2
+CPC_MODEL := 6128
+RUN_FILE := loader.bas
 
 # ============================================
 # INCLUIR MAKEFILE PRINCIPAL
