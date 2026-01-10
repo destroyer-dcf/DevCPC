@@ -54,10 +54,10 @@ NC := \033[0m # No Color
 
 #TARGETS PRINCIPALES
 
-.PHONY: all help compile clean info build-all dsk
+.PHONY: all help clean info dsk
 
-# TARGET POR DEFECTO
-all: info compile
+# TARGET POR DEFECTO - Compilar proyecto completo
+all: info _compile
 
 # MOSTRAR AYUDA
 help:
@@ -72,22 +72,21 @@ help:
 	@echo "$(CYAN)Targets disponibles:$(NC)"
 	@echo "  help        - Mostrar esta ayuda"
 	@echo "  info        - Mostrar configuración actual"
-	@echo "  all         - Mostrar info + compilar nivel 0 (por defecto)"
-	@echo "  build-all   - Compilar todos los niveles (0-4)"
-	@echo "  8bp0-8bp4   - Compilar nivel específico (ej: make 8bp2)"
-	@echo "  dsk         - Crear imagen DSK con iDSK20"
+	@echo "  all         - Mostrar info + compilar + crear DSK (por defecto)"
+	@echo "  dsk         - Crear imagen DSK con binario compilado"
 	@echo "  clean       - Limpiar archivos temporales y dist"
 	@echo ""
 	@echo "$(CYAN)Variables:$(NC)"
 	@echo "  8BP_ASM_PATH  Ruta al directorio ASM (actual: $(8BP_ASM_PATH))"
+	@echo "  BUILD_LEVEL   Nivel de compilación 0-4 (actual: $(BUILD_LEVEL))"
 	@echo "  ABASM_PATH    Ruta a abasm.py (actual: $(ABASM_PATH))"
 	@echo "  DIST_DIR      Directorio de salida (actual: $(DIST_DIR))"
+	@echo "  DSK           Nombre de la imagen DSK (actual: $(DSK))"
 	@echo ""
 	@echo "$(CYAN)Ejemplos:$(NC)"
-	@echo "  make all                                  # Info + compilar nivel 0"
-	@echo "  make 8bp2                                 # Solo compilar nivel 2"
-	@echo "  make build-all                            # Compilar todos los niveles"
-	@echo "  make all 8BP_ASM_PATH=./mi_proyecto/ASM"
+	@echo "  make                        # Compilar proyecto (info + compile + dsk)"
+	@echo "  make clean                  # Limpiar archivos generados"
+	@echo "  make info                   # Ver configuración"
 	@echo ""
 	@echo "$(CYAN)Niveles de compilación:$(NC)"
 	@echo "  0 = Todas las funcionalidades (MEMORY 23600)"
@@ -113,7 +112,7 @@ info:
 	@echo ""
 
 # Compilar con el nivel especificado
-compile: $(DIST_DIR)
+_compile: $(DIST_DIR)
 	@echo "$(YELLOW)\nCompilando nivel $(BUILD_LEVEL)...$(NC)\n"
 	@echo "$(BLUE)═══════════════════════════════════════$(NC)"
 	@echo "$(BLUE)  8BP - Build $(BUILD_LEVEL)$(NC)"
@@ -229,23 +228,6 @@ compile: $(DIST_DIR)
 	@$(MAKE) dsk --no-print-directory
 
 # COMPILAR TODOS LOS NIVELES DE 8BP
-build-all: $(DIST_DIR)
-	@echo "$(BLUE)═══════════════════════════════════════$(NC)"
-	@echo "$(BLUE)  Compilando todos los niveles$(NC)"
-	@echo "$(BLUE)═══════════════════════════════════════$(NC)"
-	@echo ""
-	@for level in 0 1 2 3 4; do \
-		echo "$(CYAN)Compilando nivel $$level...$(NC)"; \
-		$(MAKE) compile BUILD_LEVEL=$$level --no-print-directory || exit 1; \
-		echo ""; \
-	done
-	@echo "$(GREEN)✓ Todos los niveles compilados exitosamente$(NC)"
-	@echo ""
-	@echo "$(CYAN)Binarios generados:$(NC)"
-	@ls -lh $(DIST_DIR)/8BP*.bin 2>/dev/null || echo "  No se encontraron binarios"
-	@echo ""
-
-# CREACION DIRECTORIO DIST
 $(DIST_DIR):
 	@mkdir -p $(DIST_DIR)
 
@@ -264,41 +246,6 @@ clean:
 
 # TARGETS ESPECIFICOS POR NIVEL DE COMPILACION
 
-.PHONY: 8bp0 8bp1 8bp2 8bp3 8bp4
-
-8bp0:
-	@$(MAKE) compile BUILD_LEVEL=0 --no-print-directory
-
-8bp1:
-	@$(MAKE) compile BUILD_LEVEL=1 --no-print-directory
-
-8bp2:
-	@$(MAKE) compile BUILD_LEVEL=2 --no-print-directory
-
-8bp3:
-	@$(MAKE) compile BUILD_LEVEL=3 --no-print-directory
-
-8bp4:
-	@$(MAKE) compile BUILD_LEVEL=4 --no-print-directory
-
-# VALIDACIONES
-
-.PHONY: check
-
-check:
-	@echo "\n$(CYAN)Verificando configuración...$(NC)"
-	@if [ ! -d "$(8BP_ASM_PATH)" ]; then \
-		echo "$(RED)Error: Directorio ASM no existe: $(8BP_ASM_PATH)$(NC)"; \
-		exit 1; \
-	fi
-	@if [ ! -f "$(ABASM_PATH)" ]; then \
-		echo "$(RED)Error: abasm.py no existe: $(ABASM_PATH)$(NC)"; \
-		exit 1; \
-	fi
-	@if [ -z "$(PYTHON)" ]; then \
-		echo "$(RED)Error: Python no está instalado$(NC)"; \
-		exit 1; \
-	fi
 	@echo "$(GREEN)✓ Configuración válida$(NC)\n"
 # CREAR IMAGEN DSK
 dsk: $(DIST_DIR)
@@ -318,7 +265,7 @@ dsk: $(DIST_DIR)
 	$(call create-dsk,$(DSK))
 	@echo ""
 	@if [ ! -f "$(DIST_DIR)/8BP$(BUILD_LEVEL).bin" ]; then \
-		echo "$(YELLOW)⚠ No se encontró 8BP$(BUILD_LEVEL).bin - compile primero$(NC)"; \
+		echo "$(YELLOW)⚠ No se encontró 8BP$(BUILD_LEVEL).bin - ejecuta make primero$(NC)"; \
 		echo ""; \
 		exit 1; \
 	fi

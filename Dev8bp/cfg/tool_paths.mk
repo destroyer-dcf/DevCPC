@@ -64,8 +64,3 @@ ABASM_PATH ?= $(DEV8BP_ROOT)/tools/abasm/src/abasm.py
 # iDSK - Herramienta para crear y manipular imágenes DSK de Amstrad CPC
 IDSK_PATH ?= $(DEV8BP_ROOT)/tools/iDSK20/$(IDSK_PLATFORM)/$(IDSK_BINARY)
 
-# 8BP Graphics Converter - Conversor de gráficos ASM <-> PNG
-GRAPHICS_CONVERTER_PATH ?= $(DEV8BP_ROOT)/tools/8bp-graphics-converter
-ASM2PNG ?= $(GRAPHICS_CONVERTER_PATH)/asm2png.py
-ASM2PNGS ?= $(GRAPHICS_CONVERTER_PATH)/asm2pngs.py
-PNG2ASM ?= $(GRAPHICS_CONVERTER_PATH)/png2asm.py

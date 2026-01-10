@@ -8,15 +8,13 @@
 [![Make](https://img.shields.io/badge/build-Make-orange.svg)]()
 [![8BP](https://img.shields.io/badge/8BP-v0.43-purple.svg)](https://github.com/jjaranda13/8BP)
 
+Sistema de compilación para [8BP](https://github.com/jjaranda13/8BP) utilizando [ABASM](https://github.com/fragarco/abasm) con generación automática de imágenes DSK.
 
-Compilacion [8BP](https://github.com/jjaranda13/8BP) utilizando [ABASM](https://github.com/fragarco/abasm)
+## Sistemas Soportados
 
-## Sistemas
-
-- ✅ Windows (Utilizando MSYS2 MinGW64 o WSL)
+- ✅ Windows (WSL o MSYS2 MinGW64)
 - ✅ Linux
-- ✅ Mac
-
+- ✅ macOS
 
 ## Requisitos
 
@@ -24,6 +22,7 @@ Compilacion [8BP](https://github.com/jjaranda13/8BP) utilizando [ABASM](https://
 - Make
 - Git (para submódulos)
 - ABASM (incluido como submódulo)
+- iDSK20 (incluido, multiplataforma)
 
 ## Instalación
 
@@ -47,150 +46,141 @@ cp Makefile.example Makefile
 
 2. Edita el `Makefile` con la configuración de tu proyecto:
 ```makefile
+# Nombre del proyecto (usado para el DSK)
+PROJECT_NAME := MI_JUEGO
+
+# Nivel de compilación (0-4)
+BUILD_LEVEL := 0
 
 # Ruta al directorio ASM del proyecto
-8BP_ASM_PATH := ./mi_proyecto/8BP_V43/ASM
+8BP_ASM_PATH := ./mi_proyecto/ASM
 
 # Directorio de salida para los binarios compilados
 DIST_DIR := ./mi_proyecto/dist
 ```
 
-## Uso (Compilación básica)
+## Uso
+
+### Compilación Simple
+
+```bash
+# Compilar proyecto completo (compila + crea DSK)
+make
+
+# Ver configuración actual
+make info
+
+# Limpiar archivos generados
+make clean
+
+# Ver ayuda
+make help
+```
 
 ### Niveles de Compilación
 
-Cada nivel optimiza el código para diferentes tipos de juegos:
+Cada nivel optimiza el código para diferentes tipos de juegos. Define el nivel en tu `Makefile` con la variable `BUILD_LEVEL`:
 
-| Nivel | Descripción | MEMORY | DIRECTIVA | INICIO | TAMAÑO |
-|-------|-------------|--------|--------|---------------------|-----------|
-| **8BP0** | Todos los comandos disponibles | Puedes hacer cualquier juego.Todos los comandos disponibles | MEMORY 23599 |23600|19120|
-| **8BP1** | juegos de laberintos o de pasar pantallas | No disponibles en este modo: MAP2SP,UMAP,3D|MEMORY 24999 | 25000|17620|
-| **8BP2** | Juegos con scroll | No disponibles en este modo: LAYOUT,COLAY,3D|MEMORY 24799 |24800|17820|
-| **8BP3** | Juegos pseudo-3D | No disponibles en este modo: LAYOUT,COLAY|MEMORY 23999 |24000|18620|
-| **8BP4** | JUEGOS Sin scroll/layout | No disponibles en este modo: LAYOUT,COLAY,3D,MAP2SP,UMAP|MEMORY 25299 |25300|17320|
-
-### Otros comandos
-
-```bash
-# Compilar todos los niveles
-make build-all
-
-# Mostrar información de configuración
-make info
-
-# Limpiar archivos temporales y binarios
-make clean
-
-# Mostrar ayuda
-make help
-```
+| Nivel | Descripción | MEMORY | Comandos Disponibles | Tamaño |
+|-------|-------------|--------|---------------------|--------|
+| **0** | Todas las funcionalidades | 23600 | \|LAYOUT, \|COLAY, \|MAP2SP, \|UMA, \|3D | 19120 bytes |
+| **1** | Juegos de laberintos | 25000 | \|LAYOUT, \|COLAY | 17620 bytes |
+| **2** | Juegos con scroll | 24800 | \|MAP2SP, \|UMA | 17820 bytes |
+| **3** | Juegos pseudo-3D | 24000 | \|3D | 18620 bytes |
+| **4** | Sin scroll/layout (+500 bytes) | 25300 | Básicos | 17320 bytes |
 
 ## 📝 Comandos Make
 
 | Comando | Descripción |
 |---------|-------------|
-| `make` o `make all` | Muestra info y compila nivel 0 |
+| `make` | Compila proyecto completo (info + compile + DSK) |
 | `make help` | Muestra la ayuda completa |
 | `make info` | Muestra la configuración actual |
-| `make 8bp0` | Compila nivel 0 |
-| `make 8bp1` | Compila nivel 1 |
-| `make 8bp2` | Compila nivel 2 |
-| `make 8bp3` | Compila nivel 3 |
-| `make 8bp4` | Compila nivel 4 |
-| `make build-all` | Compila todos los niveles (0-4) |
+| `make dsk` | Crea/actualiza imagen DSK con binario |
 | `make clean` | Limpia archivos temporales y dist |
 
 ## 🔧 Variables de Configuración
 
-### Variables Principales
-
-| Variable | Descripción | Valor por Defecto |
-|----------|-------------|-------------------|
-| `8BP_ASM_PATH` | Ruta al directorio ASM | `./8BP_V43/ASM` |
-| `DIST_DIR` | Directorio de salida | `./dist` |
-| `BUILD_LEVEL` | Nivel de compilación (0-4) | `0` |
-
-### Variables Automáticas
+### Variables del Proyecto (Makefile)
 
 | Variable | Descripción |
 |----------|-------------|
-| `ABASM_PATH` | Ruta construida automáticamente: `Dev8BP/tools/abasm/src/abasm.py` |
-| `PYTHON` | Intérprete Python detectado automáticamente (python3 o python) |
+| `PROJECT_NAME` | Nombre del proyecto (usado para generar el DSK: `PROJECT_NAME.dsk`) |
+| `BUILD_LEVEL` | Nivel de compilación (0-4). Define qué comandos 8BP estarán disponibles |
+| `8BP_ASM_PATH` | Ruta al directorio que contiene los archivos ASM del proyecto |
+| `DIST_DIR` | Directorio donde se generarán los binarios y el DSK |
 
-### Ejemplo de Configuración
+### Variables Automáticas (No modificar)
+
+| Variable | Descripción |
+|----------|-------------|
+| `ABASM_PATH` | Ruta al ensamblador ABASM (detectada automáticamente según plataforma) |
+| `IDSK_PATH` | Ruta al binario iDSK20 (detectada automáticamente según SO y arquitectura) |
+| `PYTHON` | Intérprete Python (detectado automáticamente: python3 o python) |
+| `DSK` | Nombre del archivo DSK generado (`$(PROJECT_NAME).dsk`) |
+
+### Ejemplo de Configuración Completa
 
 ```makefile
-# Usar ABASM versión 1.4.0
-ABASM_VERSION := 1.4.0
+# Incluir el Makefile principal
+MAKEFILE_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
+include $(MAKEFILE_DIR)/Dev8bp/cfg/Makefile.mk
 
-# Proyecto en ruta personalizada
-8BP_ASM_PATH := /Users/usuario/proyectos/mi_juego/ASM
-
-# Salida en carpeta específica
-DIST_DIR := /Users/usuario/proyectos/mi_juego/build
-
-# Compilar nivel 2 por defecto
+# Configuración del proyecto
+PROJECT_NAME := SUPER_GAME
 BUILD_LEVEL := 2
+8BP_ASM_PATH := $(CURDIR)/src/asm
+DIST_DIR := $(CURDIR)/build
 ```
 
-### Uso desde BASIC
+## 🎮 Uso desde BASIC
 
-Después de compilar, carga el binario en tu CPC:
+Después de compilar, carga el binario en tu Amstrad CPC:
 
 ```basic
-MEMORY 23500
-LOAD"8BP0.bin"
+MEMORY 24800
+LOAD"8BP2.bin"
 CALL &6B78
 ```
 
-Ajusta el valor de `MEMORY` según el nivel compilado.
+Ajusta el valor de `MEMORY` según el nivel compilado (ver tabla de niveles).
 
+## 💾 Generación de DSK
+
+El sistema genera automáticamente una imagen DSK después de cada compilación:
+
+- **Nombre**: `PROJECT_NAME.dsk`
+- **Contenido**: Binario compilado (`8BPX.bin`) con direcciones de carga/ejecución correctas
+- **Ubicación**: `DIST_DIR/`
+- **Sobrescritura**: Automática (flag `-f`)
+
+La imagen DSK se puede usar directamente en emuladores o hardware real.
 
 ## 🕹️ Roadmap
 
 - ✅ Compilación 8BP automatizada con ABASM
-- ✅ Generacion niveles de compilación (0-4)
-- 📌 Gestion de imagenes (tiles, scr, etc)
-- 📌 Generacion DSK
-- 📌 Generacion TAP
-- 📌 Generacion de ROMs
+- ✅ Generación de niveles de compilación (0-4)
+- ✅ Generación automática de DSK con iDSK20
+- ✅ Detección automática de plataforma (macOS/Linux/Windows)
+- 📌 Gestión de imágenes (tiles, scr, etc)
+- 📌 Generación TAP
+- 📌 Generación de ROMs
 - 📌 Test/Run Retro Virtual Machine (RVM)
 - 📌 Test/Run M4Board
 - 📌 Instalador Dev8BP
-- 📌 ....más..
+- 📌 ...más...
 
 ---
 
 ## Licencia
 
-MIT License
-
-Copyright (c) 2026 Destroyer
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+MIT License - Copyright (c) 2026 Destroyer
 
 ## Agradecimientos
 
-- **[jjaranda13](https://github.com/jjaranda13)** - [https://github.com/fragarco/abasm](https://github.com/fragarco/abasm)
-- **[fragarco](https://github.com/fragarco)** - [https://github.com/jjaranda13/8BP](https://github.com/jjaranda13/8BP)
+- **[jjaranda13](https://github.com/jjaranda13)** - Creador de [8BP](https://github.com/jjaranda13/8BP)
+- **[fragarco](https://github.com/fragarco)** - Creador de [ABASM](https://github.com/fragarco/abasm)
 
 ## Contacto
 
-© Destroyer 2026 - [Destroyer](mailto:destroyer.dcf@gmail.com)
-
+© Destroyer 2026 - [destroyer.dcf@gmail.com](mailto:destroyer.dcf@gmail.com)
