@@ -34,7 +34,10 @@ include $(DEV8BP_PATH)/cfg/tool_paths.mk
 include $(DEV8BP_PATH)/cfg/functions.mk
 
 # Ruta al directorio ASM (requerido)
-8BP_ASM_PATH ?= ./8BP_V43/ASM
+ASM_PATH ?= ./8BP_V43/ASM
+
+# Ruta al directorio BASIC (archivos .bas que se añadirán al DSK)
+BASIC_PATH ?= ./bas
 
 # Nivel de compilación (0-4)
 BUILD_LEVEL ?= 0
@@ -62,7 +65,7 @@ NC := \033[0m # No Color
 
 #TARGETS PRINCIPALES
 
-.PHONY: all help clean info dsk
+.PHONY: all help clean info dsk bas
 
 # TARGET POR DEFECTO - Compilar proyecto completo
 all: info _compile
@@ -92,7 +95,7 @@ help:
 	@echo "  clean       - Limpiar archivos temporales, obj y dist"
 	@echo ""
 	@echo "$(CYAN)Variables:$(NC)"
-	@echo "  8BP_ASM_PATH  Ruta al directorio ASM (actual: $(8BP_ASM_PATH))"
+	@echo "  ASM_PATH  Ruta al directorio ASM (actual: $(ASM_PATH))"
 	@echo "  BUILD_LEVEL   Nivel de compilación 0-4 (actual: $(BUILD_LEVEL))"
 	@echo "  ABASM_PATH    Ruta a abasm.py (actual: $(ABASM_PATH))"
 	@echo "  OBJ_DIR       Directorio de objetos (actual: $(OBJ_DIR))"
@@ -119,7 +122,7 @@ info:
 	@echo "$(BLUE)  ⚙️ Dev8BP - Configuración$(NC)"
 	@echo "$(BLUE)═══════════════════════════════════════$(NC)"
 	@echo ""
-	@echo "$(CYAN)Directorio ASM:$(NC)     $(8BP_ASM_PATH)"
+	@echo "$(CYAN)Directorio ASM:$(NC)     $(ASM_PATH)"
 	@echo "$(CYAN)ABASM:$(NC)              $(ABASM_PATH)"
 	@echo "$(CYAN)DSK Tool:$(NC)           $(DSK_PATH)"
 	@echo "$(CYAN)Nivel de build:$(NC)     $(BUILD_LEVEL)"
@@ -137,7 +140,7 @@ _compile: $(OBJ_DIR) $(DIST_DIR)
 	@echo ""
 	@# Información del build
 	@case $(BUILD_LEVEL) in \
-		0) DESC="Todas las funcionalidades"; MEMORY="MEMORY 23600"; COMMANDS="|LAYOUT, |COLAY, |MAP2SP, |UMA, |3D" ;; \
+		0) DESC="Todas las funcionalidades"; MEMORY="MEMORY 23599"; COMMANDS="|LAYOUT, |COLAY, |MAP2SP, |UMA, |3D" ;; \
 		1) DESC="Juegos de laberintos"; MEMORY="MEMORY 25000"; COMMANDS="|LAYOUT, |COLAY" ;; \
 		2) DESC="Juegos con scroll"; MEMORY="MEMORY 24800"; COMMANDS="|MAP2SP, |UMA" ;; \
 		3) DESC="Juegos pseudo-3D"; MEMORY="MEMORY 24000"; COMMANDS="|3D" ;; \
@@ -146,44 +149,44 @@ _compile: $(OBJ_DIR) $(DIST_DIR)
 	echo "$(CYAN)Descripción:$(NC)     $$DESC"; \
 	echo "$(CYAN)Memoria BASIC:$(NC)   $$MEMORY"; \
 	echo "$(CYAN)Comandos:$(NC)        $$COMMANDS"; \
-	echo "$(CYAN)Directorio ASM:$(NC)  $(8BP_ASM_PATH)"; \
+	echo "$(CYAN)Directorio ASM:$(NC)  $(ASM_PATH)"; \
 	echo "$(CYAN)ABASM:$(NC)           $(ABASM_PATH)"; \
 	echo ""
 	@# Verificar que existe make_all_mygame.asm
-	@if [ ! -f "$(8BP_ASM_PATH)/make_all_mygame.asm" ]; then \
-		echo "$(RED)Error: No existe el archivo $(8BP_ASM_PATH)/make_all_mygame.asm$(NC)"; \
+	@if [ ! -f "$(ASM_PATH)/make_all_mygame.asm" ]; then \
+		echo "$(RED)Error: No existe el archivo $(ASM_PATH)/make_all_mygame.asm$(NC)"; \
 		exit 1; \
 	fi
 	@# Hacer backup y modificar ASSEMBLING_OPTION
 	@echo "$(YELLOW)Configurando ASSEMBLING_OPTION = $(BUILD_LEVEL)...\n$(NC)"
-	@cp "$(8BP_ASM_PATH)/make_all_mygame.asm" "$(8BP_ASM_PATH)/make_all_mygame.asm.backup_build"
+	@cp "$(ASM_PATH)/make_all_mygame.asm" "$(ASM_PATH)/make_all_mygame.asm.backup_build"
 	@# Modificar ASSEMBLING_OPTION
 	@if [[ "$(shell uname)" == "Darwin" ]]; then \
-		sed -i '' 's/let ASSEMBLING_OPTION = [0-9]/let ASSEMBLING_OPTION = $(BUILD_LEVEL)/' "$(8BP_ASM_PATH)/make_all_mygame.asm"; \
+		sed -i '' 's/let ASSEMBLING_OPTION = [0-9]/let ASSEMBLING_OPTION = $(BUILD_LEVEL)/' "$(ASM_PATH)/make_all_mygame.asm"; \
 	else \
-		sed -i 's/let ASSEMBLING_OPTION = [0-9]/let ASSEMBLING_OPTION = $(BUILD_LEVEL)/' "$(8BP_ASM_PATH)/make_all_mygame.asm"; \
+		sed -i 's/let ASSEMBLING_OPTION = [0-9]/let ASSEMBLING_OPTION = $(BUILD_LEVEL)/' "$(ASM_PATH)/make_all_mygame.asm"; \
 	fi
 	@# Añadir directivas SAVE condicionales si no existen
-	@if ! grep -q "if ASSEMBLING_OPTION = 0" "$(8BP_ASM_PATH)/make_all_mygame.asm"; then \
-		if grep -q "^SAVE " "$(8BP_ASM_PATH)/make_all_mygame.asm"; then \
+	@if ! grep -q "if ASSEMBLING_OPTION = 0" "$(ASM_PATH)/make_all_mygame.asm"; then \
+		if grep -q "^SAVE " "$(ASM_PATH)/make_all_mygame.asm"; then \
 			if [[ "$(shell uname)" == "Darwin" ]]; then \
-				sed -i '' '/^SAVE /d' "$(8BP_ASM_PATH)/make_all_mygame.asm"; \
+				sed -i '' '/^SAVE /d' "$(ASM_PATH)/make_all_mygame.asm"; \
 			else \
-				sed -i '/^SAVE /d' "$(8BP_ASM_PATH)/make_all_mygame.asm"; \
+				sed -i '/^SAVE /d' "$(ASM_PATH)/make_all_mygame.asm"; \
 			fi; \
 		fi; \
-		echo "" >> "$(8BP_ASM_PATH)/make_all_mygame.asm"; \
-		echo "if ASSEMBLING_OPTION = 0" >> "$(8BP_ASM_PATH)/make_all_mygame.asm"; \
-		echo 'SAVE "8BP0.bin",23600,19120' >> "$(8BP_ASM_PATH)/make_all_mygame.asm"; \
-		echo "elseif ASSEMBLING_OPTION = 1" >> "$(8BP_ASM_PATH)/make_all_mygame.asm"; \
-		echo 'SAVE "8BP1.bin",25000,17620' >> "$(8BP_ASM_PATH)/make_all_mygame.asm"; \
-		echo "elseif ASSEMBLING_OPTION = 2" >> "$(8BP_ASM_PATH)/make_all_mygame.asm"; \
-		echo 'SAVE "8BP2.bin",24800,17820' >> "$(8BP_ASM_PATH)/make_all_mygame.asm"; \
-		echo "elseif ASSEMBLING_OPTION = 3" >> "$(8BP_ASM_PATH)/make_all_mygame.asm"; \
-		echo 'SAVE "8BP3.bin",24000,18620' >> "$(8BP_ASM_PATH)/make_all_mygame.asm"; \
-		echo "elseif ASSEMBLING_OPTION = 4" >> "$(8BP_ASM_PATH)/make_all_mygame.asm"; \
-		echo 'SAVE "8BP4.bin",25300,17320' >> "$(8BP_ASM_PATH)/make_all_mygame.asm"; \
-		echo "endif" >> "$(8BP_ASM_PATH)/make_all_mygame.asm"; \
+		echo "" >> "$(ASM_PATH)/make_all_mygame.asm"; \
+		echo "if ASSEMBLING_OPTION = 0" >> "$(ASM_PATH)/make_all_mygame.asm"; \
+		echo 'SAVE "8BP0.bin",23600,19120' >> "$(ASM_PATH)/make_all_mygame.asm"; \
+		echo "elseif ASSEMBLING_OPTION = 1" >> "$(ASM_PATH)/make_all_mygame.asm"; \
+		echo 'SAVE "8BP1.bin",25000,17620' >> "$(ASM_PATH)/make_all_mygame.asm"; \
+		echo "elseif ASSEMBLING_OPTION = 2" >> "$(ASM_PATH)/make_all_mygame.asm"; \
+		echo 'SAVE "8BP2.bin",24800,17820' >> "$(ASM_PATH)/make_all_mygame.asm"; \
+		echo "elseif ASSEMBLING_OPTION = 3" >> "$(ASM_PATH)/make_all_mygame.asm"; \
+		echo 'SAVE "8BP3.bin",24000,18620' >> "$(ASM_PATH)/make_all_mygame.asm"; \
+		echo "elseif ASSEMBLING_OPTION = 4" >> "$(ASM_PATH)/make_all_mygame.asm"; \
+		echo 'SAVE "8BP4.bin",25300,17320' >> "$(ASM_PATH)/make_all_mygame.asm"; \
+		echo "endif" >> "$(ASM_PATH)/make_all_mygame.asm"; \
 		echo "$(CYAN)Añadidas directivas SAVE condicionales:$(NC)"; \
 		echo "  $(CYAN)0:$(NC) 8BP0.bin, 23600, 19120"; \
 		echo "  $(CYAN)1:$(NC) 8BP1.bin, 25000, 17620"; \
@@ -196,7 +199,7 @@ _compile: $(OBJ_DIR) $(DIST_DIR)
 	@echo "\n$(YELLOW)Compilando con ABASM...$(NC)\n"
 	@# Compilar con ABASM - Guardar directorio del proyecto antes de cambiar
 	@PROJECT_ROOT="$(CURDIR)"; \
-	cd "$(8BP_ASM_PATH)" && $(PYTHON) "$(ABASM_PATH)" "make_all_mygame.asm" --tolerance 2 && \
+	cd "$(ASM_PATH)" && $(PYTHON) "$(ABASM_PATH)" "make_all_mygame.asm" --tolerance 2 && \
 	if [ -f "8BP$(BUILD_LEVEL).bin" ]; then \
 		mv "8BP$(BUILD_LEVEL).bin" "$$PROJECT_ROOT/$(OBJ_DIR)/"; \
 		if [ -f "make_all_mygame.bin" ]; then mv "make_all_mygame.bin" "$$PROJECT_ROOT/$(OBJ_DIR)/"; fi; \
@@ -207,18 +210,18 @@ _compile: $(OBJ_DIR) $(DIST_DIR)
 		done; \
 		rm -f *.bin; \
 		SIZE=$$(stat -f%z "$(OBJ_DIR)/8BP$(BUILD_LEVEL).bin" 2>/dev/null || stat -c%s "$(OBJ_DIR)/8BP$(BUILD_LEVEL).bin" 2>/dev/null); \
-		mv "$(8BP_ASM_PATH)/make_all_mygame.asm.backup_build" "$(8BP_ASM_PATH)/make_all_mygame.asm"; \
+		mv "$(ASM_PATH)/make_all_mygame.asm.backup_build" "$(ASM_PATH)/make_all_mygame.asm"; \
 		echo ""; \
 		echo "$(GREEN)  Archivo:    8BP$(BUILD_LEVEL).bin$(NC)"; \
 		echo "$(GREEN)  Ubicación:  $(OBJ_DIR)/8BP$(BUILD_LEVEL).bin$(NC)"; \
 		echo "$(GREEN)  Tamaño:     $$SIZE bytes$(NC)"; \
 		echo ""; \
 		case $(BUILD_LEVEL) in \
-			0) MEMORY="MEMORY 23600" ;; \
-			1) MEMORY="MEMORY 25000" ;; \
-			2) MEMORY="MEMORY 24800" ;; \
-			3) MEMORY="MEMORY 24000" ;; \
-			4) MEMORY="MEMORY 25300" ;; \
+			0) MEMORY="MEMORY 23599" ;; \
+			1) MEMORY="MEMORY 24999" ;; \
+			2) MEMORY="MEMORY 24799" ;; \
+			3) MEMORY="MEMORY 23999" ;; \
+			4) MEMORY="MEMORY 25299" ;; \
 		esac; \
 		echo "$(CYAN)Uso desde BASIC:$(NC)"; \
 		echo "  $$MEMORY"; \
@@ -226,18 +229,18 @@ _compile: $(OBJ_DIR) $(DIST_DIR)
 		echo "  CALL &6B78"; \
 		echo ""; \
 	else \
-		mv "$(8BP_ASM_PATH)/make_all_mygame.asm.backup_build" "$(8BP_ASM_PATH)/make_all_mygame.asm"; \
+		mv "$(ASM_PATH)/make_all_mygame.asm.backup_build" "$(ASM_PATH)/make_all_mygame.asm"; \
 		echo "$(YELLOW)Advertencia: No se encontró el binario 8BP$(BUILD_LEVEL).bin$(NC)"; \
 		exit 1; \
-	fi || (mv "$(8BP_ASM_PATH)/make_all_mygame.asm.backup_build" "$(8BP_ASM_PATH)/make_all_mygame.asm" 2>/dev/null; exit 1)
+	fi || (mv "$(ASM_PATH)/make_all_mygame.asm.backup_build" "$(ASM_PATH)/make_all_mygame.asm" 2>/dev/null; exit 1)
 	@# Verificar que el binario se generó correctamente
 	@if [ -f "$(OBJ_DIR)/8BP$(BUILD_LEVEL).bin" ]; then \
 		echo "$(GREEN)✓ Build Successful!!$(NC)"; \
 		echo ""; \
 	else \
 		echo "$(YELLOW)⚠ Binario no encontrado en obj, buscando...$(NC)"; \
-		if [ -f "$(8BP_ASM_PATH)/8BP$(BUILD_LEVEL).bin" ]; then \
-			mv "$(8BP_ASM_PATH)/8BP$(BUILD_LEVEL).bin" "$(OBJ_DIR)/" && \
+		if [ -f "$(ASM_PATH)/8BP$(BUILD_LEVEL).bin" ]; then \
+			mv "$(ASM_PATH)/8BP$(BUILD_LEVEL).bin" "$(OBJ_DIR)/" && \
 			echo "$(GREEN)✓ Binario movido a: $(OBJ_DIR)/8BP$(BUILD_LEVEL).bin$(NC)"; \
 		fi \
 	fi
@@ -247,12 +250,12 @@ _compile: $(OBJ_DIR) $(DIST_DIR)
 # LIMPIAR ARCHIVOS TEMPORALES
 clean:
 	@echo "\n$(YELLOW)Limpiando archivos temporales...$(NC)"
-	@rm -f "$(8BP_ASM_PATH)"/*.backup
-	@rm -f "$(8BP_ASM_PATH)"/*.backup_build
-	@rm -f "$(8BP_ASM_PATH)"/*.encoding_backup
-	@rm -f "$(8BP_ASM_PATH)"/make_all_mygame.bin
-	@rm -f "$(8BP_ASM_PATH)"/*.lst
-	@rm -f "$(8BP_ASM_PATH)"/*.map
+	@rm -f "$(ASM_PATH)"/*.backup
+	@rm -f "$(ASM_PATH)"/*.backup_build
+	@rm -f "$(ASM_PATH)"/*.encoding_backup
+	@rm -f "$(ASM_PATH)"/make_all_mygame.bin
+	@rm -f "$(ASM_PATH)"/*.lst
+	@rm -f "$(ASM_PATH)"/*.map
 	@rm -rf $(OBJ_DIR)
 	@rm -rf $(DIST_DIR)
 	@echo "$(GREEN)✓ Limpieza completada (obj y dist eliminados)$(NC)\n"
@@ -286,6 +289,35 @@ dsk: $(DIST_DIR)
 		4) LOAD_ADDR="0x62D4" ;; \
 	esac; \
 	$(call dsk-put-bin,$(DSK),8BP$(BUILD_LEVEL).bin,$$LOAD_ADDR,$$LOAD_ADDR)
+	@$(MAKE) bas --no-print-directory
 	@echo "$(YELLOW)Nota:$(NC) Los archivos >16KB se dividen en múltiples extents (extensiones)"
 	@echo "       Cada extent puede contener hasta 128 páginas de datos (16KB)"
+	@echo ""
+
+
+# AÑADIR ARCHIVOS BASIC AL DSK
+bas:
+	@if [ ! -d "$(BASIC_PATH)" ]; then \
+		echo "$(YELLOW)⚠ No existe la carpeta $(BASIC_PATH)$(NC)"; \
+		exit 0; \
+	fi
+	@echo ""
+	@echo "$(CYAN)Añadiendo archivos BASIC desde:$(NC) $(BASIC_PATH)"
+	@BASIC_COUNT=0; \
+	for file in "$(BASIC_PATH)"/*.bas; do \
+		if [ -f "$$file" ]; then \
+			BASENAME=$$(basename "$$file"); \
+			cp "$$file" "$(CURDIR)/$(OBJ_DIR)/$$BASENAME"; \
+			if [ $$(tail -c 1 "$(CURDIR)/$(OBJ_DIR)/$$BASENAME" | wc -l) -eq 0 ]; then \
+				echo "" >> "$(CURDIR)/$(OBJ_DIR)/$$BASENAME"; \
+			fi; \
+			$(call dsk-put-ascii,$(DSK),$$BASENAME) && \
+			BASIC_COUNT=$$((BASIC_COUNT + 1)); \
+		fi; \
+	done; \
+	if [ $$BASIC_COUNT -eq 0 ]; then \
+		echo "$(YELLOW)⚠ No se encontraron archivos .bas en $(BASIC_PATH)$(NC)"; \
+	else \
+		echo "$(GREEN)✓ $$BASIC_COUNT archivo(s) BASIC añadido(s)$(NC)"; \
+	fi
 	@echo ""

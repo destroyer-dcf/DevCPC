@@ -41,7 +41,10 @@ PROJECT_NAME := MI_JUEGO
 BUILD_LEVEL := 0
 
 # Ruta al directorio ASM del proyecto
-8BP_ASM_PATH := $(CURDIR)/ASM
+ASM_PATH := $(CURDIR)/ASM
+
+# Ruta al directorio BASIC (archivos .bas que se añadirán al DSK)
+BASIC_PATH := $(CURDIR)/bas
 
 # Directorio de objetos intermedios (bin, lst, map)
 OBJ_DIR := obj

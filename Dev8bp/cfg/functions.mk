@@ -33,17 +33,17 @@ endef
 # Uso: $(call dsk-put-bin,$(DSK),8BP0.bin,0x5C30,0x5C30)
 define dsk-put-bin
 	echo "$(CYAN)Añadiendo binario a DSK:$(NC) $(2) → $(1)"; \
-	if [ ! -f "$(DIST_DIR)/$(1)" ]; then \
+	if [ ! -f "$(CURDIR)/$(DIST_DIR)/$(1)" ]; then \
 		echo "$(RED)✗ Error: La imagen DSK $(1) no existe$(NC)"; \
 		exit 1; \
 	fi; \
-	if [ ! -f "$(OBJ_DIR)/$(2)" ]; then \
+	if [ ! -f "$(CURDIR)/$(OBJ_DIR)/$(2)" ]; then \
 		echo "$(RED)✗ Error: El archivo $(2) no existe en $(OBJ_DIR)$(NC)"; \
 		exit 1; \
 	fi; \
 	LOAD_ADDR=$(if $(3),$(3),0x4000); \
 	START_ADDR=$(if $(4),$(4),0x4000); \
-	cd "$(OBJ_DIR)" && $(PYTHON) "$(DSK_PATH)" "$(CURDIR)/$(DIST_DIR)/$(1)" --put-bin "$(2)" --load-addr $$LOAD_ADDR --start-addr $$START_ADDR; \
+	(cd "$(CURDIR)/$(OBJ_DIR)" && $(PYTHON) "$(DSK_PATH)" "$(CURDIR)/$(DIST_DIR)/$(1)" --put-bin "$(2)" --load-addr $$LOAD_ADDR --start-addr $$START_ADDR); \
 	if [ $$? -eq 0 ]; then \
 		echo "$(GREEN)✓ Binario añadido correctamente$(NC)"; \
 		echo ""; \
@@ -63,15 +63,15 @@ endef
 # Uso: $(call dsk-put-raw,$(DSK),data.bin)
 define dsk-put-raw
 	echo "$(CYAN)Añadiendo archivo raw a DSK:$(NC) $(2) → $(1)"; \
-	if [ ! -f "$(DIST_DIR)/$(1)" ]; then \
+	if [ ! -f "$(CURDIR)/$(DIST_DIR)/$(1)" ]; then \
 		echo "$(RED)✗ Error: La imagen DSK $(1) no existe$(NC)"; \
 		exit 1; \
 	fi; \
-	if [ ! -f "$(OBJ_DIR)/$(2)" ]; then \
+	if [ ! -f "$(CURDIR)/$(OBJ_DIR)/$(2)" ]; then \
 		echo "$(RED)✗ Error: El archivo $(2) no existe en $(OBJ_DIR)$(NC)"; \
 		exit 1; \
 	fi; \
-	cd "$(OBJ_DIR)" && $(PYTHON) "$(DSK_PATH)" "$(CURDIR)/$(DIST_DIR)/$(1)" --put-raw "$(2)"; \
+	(cd "$(CURDIR)/$(OBJ_DIR)" && $(PYTHON) "$(DSK_PATH)" "$(CURDIR)/$(DIST_DIR)/$(1)" --put-raw "$(2)"); \
 	if [ $$? -eq 0 ]; then \
 		echo "$(GREEN)✓ Archivo raw añadido correctamente$(NC)"; \
 		echo ""; \
@@ -91,15 +91,15 @@ endef
 # Uso: $(call dsk-put-ascii,$(DSK),loader.bas)
 define dsk-put-ascii
 	echo "$(CYAN)Añadiendo archivo ASCII a DSK:$(NC) $(2) → $(1)"; \
-	if [ ! -f "$(DIST_DIR)/$(1)" ]; then \
+	if [ ! -f "$(CURDIR)/$(DIST_DIR)/$(1)" ]; then \
 		echo "$(RED)✗ Error: La imagen DSK $(1) no existe$(NC)"; \
 		exit 1; \
 	fi; \
-	if [ ! -f "$(OBJ_DIR)/$(2)" ]; then \
+	if [ ! -f "$(CURDIR)/$(OBJ_DIR)/$(2)" ]; then \
 		echo "$(RED)✗ Error: El archivo $(2) no existe en $(OBJ_DIR)$(NC)"; \
 		exit 1; \
 	fi; \
-	cd "$(OBJ_DIR)" && $(PYTHON) "$(DSK_PATH)" "$(CURDIR)/$(DIST_DIR)/$(1)" --put-ascii "$(2)"; \
+	(cd "$(CURDIR)/$(OBJ_DIR)" && $(PYTHON) "$(DSK_PATH)" "$(CURDIR)/$(DIST_DIR)/$(1)" --put-ascii "$(2)"); \
 	if [ $$? -eq 0 ]; then \
 		echo "$(GREEN)✓ Archivo ASCII añadido correctamente$(NC)"; \
 		echo ""; \
@@ -122,4 +122,32 @@ define dsk-cat
 		exit 1; \
 	fi; \
 	$(PYTHON) "$(DSK_PATH)" "$(DIST_DIR)/$(1)" --cat
+endef
+
+# Función: dsk-put-ascii-from-path
+# Descripción: Añade un archivo ASCII (BASIC) al DSK desde una ruta específica
+# Parámetros:
+#   $(1) - Nombre del archivo DSK (ej: game.dsk)
+#   $(2) - Ruta completa al archivo ASCII (ej: /path/to/loader.bas)
+# Uso: $(call dsk-put-ascii-from-path,$(DSK),/path/to/loader.bas)
+define dsk-put-ascii-from-path
+	echo "$(CYAN)Añadiendo archivo ASCII a DSK:$(NC) $(basename $(2)) → $(1)"; \
+	if [ ! -f "$(DIST_DIR)/$(1)" ]; then \
+		echo "$(RED)✗ Error: La imagen DSK $(1) no existe$(NC)"; \
+		exit 1; \
+	fi; \
+	if [ ! -f "$(2)" ]; then \
+		echo "$(RED)✗ Error: El archivo $(2) no existe$(NC)"; \
+		exit 1; \
+	fi; \
+	$(PYTHON) "$(DSK_PATH)" "$(CURDIR)/$(DIST_DIR)/$(1)" --put-ascii "$(2)"; \
+	if [ $$? -eq 0 ]; then \
+		echo "$(GREEN)✓ Archivo ASCII añadido correctamente$(NC)"; \
+		echo ""; \
+		$(PYTHON) "$(DSK_PATH)" "$(CURDIR)/$(DIST_DIR)/$(1)" --cat; \
+		echo ""; \
+	else \
+		echo "$(RED)✗ Error al añadir el archivo ASCII$(NC)"; \
+		exit 1; \
+	fi
 endef
