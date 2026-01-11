@@ -37,7 +37,7 @@ PROJECT_NAME := MY_GAME_MOLON
 BUILD_LEVEL := 0
 
 # Path codigo emsembler 8BP
-ASM_PATH := ASM
+ASM_PATH := asm
 
 # Path archivos BASIC (se añadirán al DSK automáticamente)
 BASIC_PATH := bas

@@ -264,6 +264,36 @@ _compile: $(OBJ_DIR) $(DIST_DIR)
 	@if [ -f "$(OBJ_DIR)/8BP$(BUILD_LEVEL).bin" ]; then \
 		echo "$(GREEN)✓ Build Successful!!$(NC)"; \
 		echo ""; \
+		if [ -f "$(OBJ_DIR)/make_all_mygame.map" ]; then \
+			END_GRAPH_LINE=$$(grep "_END_GRAPH" "$(OBJ_DIR)/make_all_mygame.map" | head -1); \
+			if [ -n "$$END_GRAPH_LINE" ]; then \
+				END_GRAPH_ADDR=$$(echo "$$END_GRAPH_LINE" | sed 's/.*\[0x\([0-9A-Fa-f]*\).*/\1/'); \
+				if [ -n "$$END_GRAPH_ADDR" ]; then \
+					END_GRAPH_DEC=$$(printf "%d" 0x$$END_GRAPH_ADDR 2>/dev/null || echo "0"); \
+					if [ $$END_GRAPH_DEC -gt 0 ]; then \
+						GRAPH_SIZE=$$((END_GRAPH_DEC - 33600)); \
+						echo "$(CYAN)Verificación de gráficos:$(NC)"; \
+						echo "  _END_GRAPH: $$END_GRAPH_DEC (0x$$END_GRAPH_ADDR)"; \
+						echo "  Tamaño gráficos: $$GRAPH_SIZE bytes (máximo: 8440 bytes)"; \
+						if [ $$END_GRAPH_DEC -ge 42040 ]; then \
+							echo ""; \
+							echo "$(RED)✗ ERROR: _END_GRAPH ($$END_GRAPH_DEC) >= 42040$(NC)"; \
+							echo "$(RED)  Estás usando $$GRAPH_SIZE bytes de gráficos (máximo: 8440 bytes)$(NC)"; \
+							echo "$(RED)  Esto machacará direcciones del intérprete BASIC y puede bloquear el ordenador$(NC)"; \
+							echo ""; \
+							echo "$(YELLOW)Soluciones:$(NC)"; \
+							echo "  1. Reduce el número de gráficos"; \
+							echo "  2. Ensambla gráficos extra en otra zona (ej: 22000) y usa MEMORY 21999"; \
+							echo ""; \
+							exit 1; \
+						else \
+							echo "  $(GREEN)✓ OK: Límite de gráficos respetado (< 42040)$(NC)"; \
+						fi; \
+						echo ""; \
+					fi; \
+				fi; \
+			fi; \
+		fi; \
 	else \
 		echo "$(YELLOW)⚠ Binario no encontrado en obj, buscando...$(NC)"; \
 		if [ -f "$(ASM_PATH)/8BP$(BUILD_LEVEL).bin" ]; then \
