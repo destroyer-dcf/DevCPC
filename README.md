@@ -20,22 +20,18 @@ Sistema de compilación para [8BP](https://github.com/jjaranda13/8BP) utilizando
 
 - Python 3.x
 - Make
-- ABASM
+- ABASM 1.4.0 (Se instala con Dev8BP)
+- SDCC (Obligatorio si compilas codigo C para 8BP)
 
 ## Instalación
 
 1. Clona el repositorio con submódulos:
 ```bash
-git clone --recurse-submodules https://github.com/tu-usuario/Dev8BP.git
+git clone https://github.com/destroyer-dcf/Dev8BP.git
 cd Dev8BP
 ```
 
-2. Si ya clonaste el repositorio sin submódulos:
-```bash
-git submodule update --init --recursive
-```
-
-3. Configura la variable de entorno `DEV8BP_PATH`:
+2. Configura la variable de entorno `DEV8BP_PATH`:
 ```bash
 # Ejecuta el script de configuración (añade la variable a .bashrc/.zshrc)
 ./setup.sh
@@ -54,11 +50,16 @@ cp Makefile.example Makefile
 ```
 
 2. Edita el `Makefile` con la configuración de tu proyecto:
+
 ```makefile
 # Verificar que DEV8BP_PATH está definida
 ifndef DEV8BP_PATH
 $(error DEV8BP_PATH no está definida. Ejecuta setup.sh)
 endif
+
+# ============================================
+# CONFIGURACIÓN DEL PROYECTO
+# ============================================
 
 # Nombre del proyecto (usado para el DSK)
 PROJECT_NAME := MI_JUEGO
@@ -72,7 +73,12 @@ ASM_PATH := $(CURDIR)/ASM
 # Ruta al directorio BASIC (archivos .bas que se añadirán al DSK)
 BASIC_PATH := $(CURDIR)/bas
 
-# Directorio de objetos intermedios (bin, lst, map)
+# Ruta al directorio C (código C con SDCC - opcional)
+C_PATH := $(CURDIR)/C
+C_SOURCE := ciclo.c
+C_CODE_LOC := 20000
+
+# Directorio de objetos intermedios (bin, lst, map, ihx)
 OBJ_DIR := obj
 
 # Directorio de salida para DSK
@@ -81,22 +87,28 @@ DIST_DIR := dist
 # Nombre de la imagen DSK
 DSK := $(PROJECT_NAME).dsk
 
-# Incluir el Makefile principal
+# Configuración RetroVirtualMachine (opcional - para 'make run')
+# RVM_PATH := /Applications/Retro Virtual Machine 2.app/Contents/MacOS/Retro Virtual Machine 2
+# CPC_MODEL := 464
+# RUN_FILE := 8BP0.BIN
+
+# ============================================
+# INCLUIR MAKEFILE PRINCIPAL
+# ============================================
+
 include $(DEV8BP_PATH)/cfg/Makefile.mk
 ```
 
 3. Estructura de directorios recomendada:
-```
-mi_proyecto/
-├── Makefile          # Configuración del proyecto
-├── ASM/              # Archivos .asm del proyecto
-│   └── make_all_mygame.asm
-├── bas/              # Archivos BASIC (se añaden automáticamente al DSK)
-│   └── loader.bas
-├── obj/              # Generado: binarios, lst, map (intermedio)
-└── dist/             # Generado: imagen DSK final
-    └── MI_JUEGO.dsk
-```
+
+| Directorio/Archivo | Descripción |
+|-------------------|-------------|
+| `Makefile` | Configuración del proyecto |
+| `ASM/` | Archivos .asm del proyecto (ej: `make_all_mygame.asm`) |
+| `bas/` | Archivos BASIC (se añaden automáticamente al DSK) |
+| `C/` | Código C (opcional, se compila con SDCC si existe) |
+| `obj/` | **Generado**: Archivos intermedios (bin, lst, map, ihx) |
+| `dist/` | **Generado**: Imagen DSK final |
 
 ## Uso
 
@@ -132,11 +144,12 @@ Cada nivel optimiza el código para diferentes tipos de juegos. Define el nivel 
 
 | Comando | Descripción |
 |---------|-------------|
-| `make` | Compila proyecto completo (info + compile + DSK + BASIC) |
+| `make` | Compila proyecto completo (info + compile + DSK + BASIC + C) |
 | `make help` | Muestra la ayuda completa |
 | `make info` | Muestra la configuración actual |
 | `make dsk` | Crea/actualiza imagen DSK con binario y archivos BASIC |
 | `make bas` | Añade archivos BASIC desde `BASIC_PATH` al DSK |
+| `make c` | Compila código C con SDCC y añade al DSK |
 | `make run` | Ejecuta el DSK en RetroVirtualMachine (requiere configuración) |
 | `make clean` | Limpia archivos temporales, obj y dist |
 
@@ -150,11 +163,14 @@ Cada nivel optimiza el código para diferentes tipos de juegos. Define el nivel 
 | `BUILD_LEVEL` | Nivel de compilación (0-4). Define qué comandos 8BP estarán disponibles | `0` |
 | `ASM_PATH` | Ruta al directorio que contiene los archivos ASM del proyecto | `$(CURDIR)/ASM` |
 | `BASIC_PATH` | Ruta al directorio con archivos .bas (se añaden automáticamente al DSK) | `$(CURDIR)/bas` |
+| `C_PATH` | Ruta al directorio con código C (se compila con SDCC si existe) | `$(CURDIR)/C` |
+| `C_SOURCE` | Archivo fuente C principal | `ciclo.c` |
+| `C_CODE_LOC` | Dirección de carga del código C (debe ser < 23999 para no destruir 8BP) | `20000` |
 | `OBJ_DIR` | Directorio para archivos intermedios (bin, lst, map) | `obj` |
 | `DIST_DIR` | Directorio donde se generará el DSK final | `dist` |
 | `DSK` | Nombre del archivo DSK generado | `$(PROJECT_NAME).dsk` |
 | `RVM_PATH` | Ruta al ejecutable de RetroVirtualMachine (opcional, para `make run`) | - |
-| `CPC_MODEL` | Modelo de Amstrad CPC para el emulador (464, 6128, etc.) | `464` |
+| `CPC_MODEL` | Modelo de Amstrad CPC para el emulador RVM (464, 6128, etc.) | `464` |
 | `RUN_FILE` | Archivo a ejecutar automáticamente en el emulador (opcional) | - |
 
 > **Nota**: En Mac RVM_PATH se debe poner como ejecutable el binario (/Applications/Retro Virtual Machine 2.app/Contents/MacOS/Retro Virtual Machine 2), no /Applications/Retro Virtual Machine 2.app.
@@ -167,6 +183,8 @@ Cada nivel optimiza el código para diferentes tipos de juegos. Define el nivel 
 | `DEV8BP_PATH` | Ruta al directorio Dev8bp (configurada por setup.sh) |
 | `ABASM_PATH` | Ruta al ensamblador ABASM (detectada automáticamente) |
 | `DSK_PATH` | Ruta a dsk.py de ABASM (detectada automáticamente) |
+| `HEX2BIN_PATH` | Ruta a hex2bin (detectada según plataforma y arquitectura) |
+| `MOT2BIN_PATH` | Ruta a mot2bin (detectada según plataforma y arquitectura) |
 | `PYTHON` | Intérprete Python (detectado automáticamente: python3 o python) |
 
 ### Ejemplo de Configuración Completa
@@ -182,9 +200,17 @@ PROJECT_NAME := SUPER_GAME
 BUILD_LEVEL := 2
 ASM_PATH := $(CURDIR)/ASM
 BASIC_PATH := $(CURDIR)/bas
+C_PATH := $(CURDIR)/C
+C_SOURCE := game.c
+C_CODE_LOC := 19000
 OBJ_DIR := obj
 DIST_DIR := dist
 DSK := $(PROJECT_NAME).dsk
+
+# Configuración RetroVirtualMachine
+RVM_PATH := /Applications/Retro Virtual Machine 2.app/Contents/MacOS/Retro Virtual Machine 2
+CPC_MODEL := 6128
+RUN_FILE := 8BP2.BIN
 
 # Incluir el Makefile principal
 include $(DEV8BP_PATH)/cfg/Makefile.mk
@@ -217,6 +243,12 @@ El sistema genera automáticamente una imagen DSK después de cada compilación 
    - Se añaden automáticamente al DSK como archivos ASCII
    - Verificación de newline final para evitar pérdida de líneas
 
+3. **Binarios C** (opcional): Si existe la carpeta `C/` con código fuente
+   - Se compila automáticamente con SDCC
+   - Se convierte de `.ihx` a `.bin` con hex2bin
+   - Se añade al DSK con la dirección de carga especificada en `C_CODE_LOC`
+   - Verificación de límites de memoria (no debe exceder 23999 para no destruir 8BP)
+
 ### Características
 
 - **Nombre**: `PROJECT_NAME.dsk`
@@ -225,22 +257,118 @@ El sistema genera automáticamente una imagen DSK después de cada compilación 
 - **Herramienta**: dsk.py de ABASM (100% Python, multiplataforma)
 - **Catálogo**: Se muestra después de añadir cada archivo
 
-### Estructura de Archivos
-
-```
-obj/                    # Archivos intermedios
-├── 8BP0.bin           # Binario compilado
-├── make_all_mygame.bin
-├── make_all_mygame.lst
-├── make_all_mygame.map
-├── loader.bas         # Archivos BASIC copiados (formato DOS)
-└── loader1.bas
-
-dist/                   # Salida final
-└── MI_JUEGO.dsk       # Imagen DSK lista para usar
-```
 
 La imagen DSK se puede usar directamente en emuladores o hardware real.
+
+## 🔧 Compilación de Código C con SDCC
+
+Dev8BP incluye soporte integrado para compilar código C usando [SDCC](http://sdcc.sourceforge.net/) (Small Device C Compiler).
+
+### Requisitos
+
+- **SDCC** instalado en el sistema
+- Carpeta `C/` en tu proyecto con:
+  - Archivo fuente (ej: `ciclo.c`)
+  - Carpeta `8BP_wrapper/` con `8BP.h`
+  - Carpeta `mini_BASIC/` con `minibasic.h`
+
+### Configuración
+
+Añade estas variables a tu `Makefile`:
+
+```makefile
+# Path código C (se compilará con SDCC si existe)
+C_PATH := $(CURDIR)/C
+C_SOURCE := ciclo.c
+C_CODE_LOC := 20000    # Dirección de carga (debe ser < 23999)
+```
+
+### Uso
+
+```bash
+# Compilar solo el código C
+make c
+
+# Compilar todo (ASM + BASIC + C)
+make
+```
+
+### Características
+
+- ✅ **Compilación automática**: Si existe la carpeta `C/`, se compila automáticamente
+- ✅ **Verificación de límites**: Verifica que el código no exceda 23999 (0x5DBF) para no destruir la librería 8BP
+- ✅ **Conversión automática**: Convierte `.ihx` a `.bin` usando hex2bin
+- ✅ **Integración con DSK**: Añade automáticamente el binario al DSK con la dirección de carga correcta
+- ✅ **Información del .map**: Muestra la dirección de `_main` y otras funciones
+
+### Proceso de Compilación
+
+1. **Limpia archivos anteriores** de compilación C
+2. **Compila con SDCC**:
+   ```bash
+   sdcc -mz80 --code-loc 20000 --data-loc 0 --no-std-crt0 \
+        --fomit-frame-pointer --opt-code-size \
+        -I8BP_wrapper -Imini_BASIC ciclo.c
+   ```
+3. **Convierte .ihx a .bin** con hex2bin
+4. **Verifica límites de memoria**: Si excede 23999, sale con error
+5. **Añade al DSK** con dirección de carga `C_CODE_LOC`
+
+### Ejemplo de Salida
+
+```
+═══════════════════════════════════════
+  🔧 Compilar código C con SDCC
+═══════════════════════════════════════
+
+Archivo fuente:   C/ciclo.c
+Dirección código:  20000 (0x4E20)
+SDCC:             /usr/local/bin/sdcc
+hex2bin:          Dev8bp/tools/hex2bin/mac-arm64/hex2bin
+
+Compilando con SDCC...
+✓ Compilación exitosa
+
+Convirtiendo .ihx a .bin...
+Binary file start = 00004E20
+Highest address   = 00005857
+✓ Límites de memoria OK (highest: 22615 / 0x5857 ≤ 23999 / 0x5DBF)
+
+Añadiendo binario a DSK: ciclo.bin
+✓ Binario añadido correctamente
+
+Información del archivo .map:
+═══════════════════════════════════════
+     000056B0  _main                              ciclo
+
+Uso desde BASIC:
+  1) Carga o ensambla 8BP con tus gráficos, música, etc.
+  2) Carga tu juego BASIC
+  3) LOAD "ciclo.BIN", 20000
+  4) CALL &56B0    (dirección de _main)
+```
+
+### Límites de Memoria
+
+⚠️ **Importante**: El código C no debe exceder la dirección **23999 (0x5DBF)** para no destruir la librería 8BP.
+
+Si tu código excede este límite:
+1. Usa una dirección de código más baja: `C_CODE_LOC := 19000`
+2. Ajusta MEMORY en BASIC: `MEMORY 18999`
+
+### Estructura de Proyecto con C
+
+| Directorio/Archivo | Descripción |
+|-------------------|-------------|
+| `Makefile` | Configuración del proyecto |
+| `ASM/` | Archivos .asm del proyecto |
+| `bas/` | Archivos BASIC |
+| `C/` | Código C |
+| `C/ciclo.c` | Archivo fuente C principal |
+| `C/8BP_wrapper/` | Headers de la librería 8BP (`8BP.h`) |
+| `C/mini_BASIC/` | Headers de mini BASIC (`minibasic.h`) |
+| `obj/` | **Generado**: Binarios, lst, map, ihx, asm, rel, etc. |
+| `dist/` | **Generado**: Imagen DSK final con todos los binarios |
 
 ## 🎮 Ejecutar en RetroVirtualMachine
 
@@ -308,8 +436,9 @@ Ejecutando:      8BP0.BIN
 - ✅ Sistema de variables de entorno (DEV8BP_PATH)
 - ✅ Organización de archivos (obj/ y dist/)
 - ✅ Integración automática de archivos BASIC
+- ✅ Compilación de código C con SDCC
+- ✅ Herramienta hex2bin multiplataforma (ARM64/x86_64)
 - ✅ Ejecución en RetroVirtualMachine (make run)
-- ✅ Instalador Dev8BP
 - 📌 Gestión de imágenes (tiles, scr, etc)
 - 📌 Generación TAP
 - 📌 Generación de ROMs

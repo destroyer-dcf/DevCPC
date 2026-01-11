@@ -39,6 +39,11 @@ ASM_PATH ?= ./8BP_V43/ASM
 # Ruta al directorio BASIC (archivos .bas que se añadirán al DSK)
 BASIC_PATH ?= ./bas
 
+# Ruta al directorio C (archivos .c para compilar con SDCC)
+C_PATH ?= ./C
+C_SOURCE ?= ciclo.c
+C_CODE_LOC ?= 20000
+
 # Configuración del emulador RetroVirtualMachine
 RVM_PATH ?= 
 CPC_MODEL ?= 464
@@ -70,7 +75,7 @@ NC := \033[0m # No Color
 
 #TARGETS PRINCIPALES
 
-.PHONY: all help clean info dsk bas run
+.PHONY: all help clean info dsk bas c run
 
 # TARGET POR DEFECTO - Compilar proyecto completo
 all: info _compile
@@ -98,6 +103,7 @@ help:
 	@echo "  all         - Mostrar info + compilar + crear DSK (por defecto)"
 	@echo "  dsk         - Crear imagen DSK con binario compilado"
 	@echo "  bas         - Añadir archivos BASIC al DSK"
+	@echo "  c           - Compilar código C con SDCC y añadir al DSK"
 	@echo "  run         - Ejecutar DSK en RetroVirtualMachine"
 	@echo "  clean       - Limpiar archivos temporales, obj y dist"
 	@echo ""
@@ -301,6 +307,9 @@ dsk: $(DIST_DIR)
 	esac; \
 	$(call dsk-put-bin,$(DSK),8BP$(BUILD_LEVEL).bin,$$LOAD_ADDR,$$LOAD_ADDR)
 	@$(MAKE) bas --no-print-directory
+	@if [ -d "$(C_PATH)" ]; then \
+		$(MAKE) c --no-print-directory; \
+	fi
 	@echo "$(YELLOW)Nota:$(NC) Los archivos >16KB se dividen en múltiples extents (extensiones)"
 	@echo "       Cada extent puede contener hasta 128 páginas de datos (16KB)"
 	@echo ""
@@ -335,6 +344,100 @@ bas:
 		echo "$(GREEN)✓ $$BASIC_COUNT archivo(s) BASIC añadido(s)$(NC)"; \
 	fi
 	@echo ""
+
+# COMPILAR CÓDIGO C CON SDCC
+c:
+	@if [ ! -d "$(C_PATH)" ]; then \
+		echo "$(YELLOW)⚠ No existe la carpeta $(C_PATH) - omitiendo compilación C$(NC)"; \
+		exit 0; \
+	fi
+	@echo ""
+	@echo "$(BLUE)═══════════════════════════════════════$(NC)"
+	@echo "$(BLUE)  🔧 Compilar código C con SDCC$(NC)"
+	@echo "$(BLUE)═══════════════════════════════════════$(NC)"
+	@echo ""
+	@# Verificar que SDCC está instalado
+	@if ! command -v sdcc > /dev/null 2>&1; then \
+		echo "$(RED)✗ Error: SDCC no está instalado$(NC)"; \
+		echo "$(YELLOW)Instala SDCC: http://sdcc.sourceforge.net/$(NC)"; \
+		exit 1; \
+	fi
+	@# Verificar que hex2bin está disponible
+	@if [ ! -f "$(HEX2BIN_PATH)" ]; then \
+		echo "$(RED)✗ Error: hex2bin no encontrado en $(HEX2BIN_PATH)$(NC)"; \
+		exit 1; \
+	fi
+	@# Verificar que existe el archivo fuente
+	@if [ ! -f "$(C_PATH)/$(C_SOURCE)" ]; then \
+		echo "$(RED)✗ Error: No existe $(C_PATH)/$(C_SOURCE)$(NC)"; \
+		exit 1; \
+	fi
+	@echo "$(CYAN)Archivo fuente:$(NC)  $(C_PATH)/$(C_SOURCE)"
+	@echo "$(CYAN)Dirección código:$(NC) $(C_CODE_LOC) (0x$$(printf '%X' $(C_CODE_LOC)))"
+	@echo "$(CYAN)SDCC:$(NC)            $$(command -v sdcc)"
+	@echo "$(CYAN)hex2bin:$(NC)         $(HEX2BIN_PATH)"
+	@echo ""
+	@# Limpiar archivos anteriores
+	@echo "$(YELLOW)Limpiando archivos anteriores...$(NC)"
+	@rm -f $(OBJ_DIR)/$$(basename $(C_SOURCE) .c).*
+	@echo ""
+	@# Compilar con SDCC
+	@echo "$(YELLOW)Compilando con SDCC...$(NC)"
+	@sdcc -mz80 --code-loc $(C_CODE_LOC) --data-loc 0 --no-std-crt0 \
+		--fomit-frame-pointer --opt-code-size \
+		-I$(C_PATH)/8BP_wrapper -I$(C_PATH)/mini_BASIC \
+		-o $(OBJ_DIR)/ $(C_PATH)/$(C_SOURCE) 2>&1 || true
+	@echo ""
+	@# Verificar que se generó el .map
+	@BASENAME=$$(basename $(C_SOURCE) .c); \
+	if [ ! -f "$(OBJ_DIR)/$$BASENAME.map" ]; then \
+		echo "$(RED)✗ Error de compilación: No se generó $$BASENAME.map$(NC)"; \
+		exit 1; \
+	fi; \
+	echo "$(GREEN)✓ Compilación exitosa$(NC)"; \
+	echo ""
+	@# Convertir .ihx a .bin
+	@echo "$(YELLOW)Convirtiendo .ihx a .bin...$(NC)"
+	@BASENAME=$$(basename $(C_SOURCE) .c); \
+	HEX2BIN_OUTPUT=$$("$(HEX2BIN_PATH)" "$(OBJ_DIR)/$$BASENAME.ihx" 2>&1); \
+	echo "$$HEX2BIN_OUTPUT"; \
+	HIGHEST=$$(echo "$$HEX2BIN_OUTPUT" | grep "Highest address" | awk '{print $$NF}'); \
+	if [ -n "$$HIGHEST" ]; then \
+		HIGHEST_DEC=$$(printf "%d" 0x$$HIGHEST 2>/dev/null || echo "0"); \
+		if [ $$HIGHEST_DEC -gt 23999 ]; then \
+			echo ""; \
+			echo "$(RED)✗ Error: Dirección más alta ($$HIGHEST_DEC / 0x$$HIGHEST) excede 23999 (0x5DBF)$(NC)"; \
+			echo "$(RED)  Esto destruirá la librería 8BP$(NC)"; \
+			echo "$(YELLOW)  Solución: Usa una dirección de código más baja (ej: C_CODE_LOC := 19000)$(NC)"; \
+			echo "$(YELLOW)  Y en BASIC pon: MEMORY 18999$(NC)"; \
+			exit 1; \
+		else \
+			echo "$(GREEN)✓ Límites de memoria OK (highest: $$HIGHEST_DEC / 0x$$HIGHEST ≤ 23999 / 0x5DBF)$(NC)"; \
+		fi; \
+	fi
+	@echo ""
+	@# Añadir .bin al DSK
+	@BASENAME=$$(basename $(C_SOURCE) .c); \
+	if [ ! -f "$(DIST_DIR)/$(DSK)" ]; then \
+		echo "$(RED)✗ Error: DSK no encontrado en $(DIST_DIR)/$(DSK)$(NC)"; \
+		echo "$(YELLOW)Ejecuta 'make' primero para crear el DSK$(NC)"; \
+		exit 1; \
+	fi; \
+	CODE_LOC_HEX=$$(printf "0x%X" $(C_CODE_LOC)); \
+	$(call dsk-put-bin,$(DSK),$$BASENAME.bin,$$CODE_LOC_HEX,$$CODE_LOC_HEX)
+	@echo ""
+	@# Mostrar información del .map
+	@BASENAME=$$(basename $(C_SOURCE) .c); \
+	echo "$(CYAN)Información del archivo .map:$(NC)"; \
+	echo "$(CYAN)═══════════════════════════════════════$(NC)"; \
+	grep -E "(Lowest address|Highest address|_main)" "$(OBJ_DIR)/$$BASENAME.map" || true; \
+	echo ""; \
+	echo "$(CYAN)Uso desde BASIC:$(NC)"; \
+	echo "  1) Carga o ensambla 8BP con tus gráficos, música, etc."; \
+	echo "  2) Carga tu juego BASIC"; \
+	echo "  3) LOAD \"$$BASENAME.BIN\", $(C_CODE_LOC)"; \
+	echo "  4) CALL <dirección de _main del .map>"; \
+	echo ""
 
 # EJECUTAR EN RETROVIRTUALMACHINE
 run:

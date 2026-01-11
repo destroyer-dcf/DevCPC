@@ -46,7 +46,12 @@ ASM_PATH := $(CURDIR)/ASM
 # Ruta al directorio BASIC (archivos .bas que se añadirán al DSK)
 BASIC_PATH := $(CURDIR)/bas
 
-# Directorio de objetos intermedios (bin, lst, map)
+# Ruta al directorio C (código C con SDCC - opcional)
+C_PATH := $(CURDIR)/C
+C_SOURCE := ciclo.c
+C_CODE_LOC := 20000
+
+# Directorio de objetos intermedios (bin, lst, map, ihx)
 OBJ_DIR := obj
 
 # Directorio de salida para DSK

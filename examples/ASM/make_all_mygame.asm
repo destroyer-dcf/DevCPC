@@ -45,3 +45,15 @@ read "make_musica_mygame.asm"
 read "make_graficos_mygame.asm"
 
 
+
+if ASSEMBLING_OPTION = 0
+SAVE "8BP0.bin",23600,19120
+elseif ASSEMBLING_OPTION = 1
+SAVE "8BP1.bin",25000,17620
+elseif ASSEMBLING_OPTION = 2
+SAVE "8BP2.bin",24800,17820
+elseif ASSEMBLING_OPTION = 3
+SAVE "8BP3.bin",24000,18620
+elseif ASSEMBLING_OPTION = 4
+SAVE "8BP4.bin",25300,17320
+endif
