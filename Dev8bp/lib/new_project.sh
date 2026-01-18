@@ -35,123 +35,8 @@ new_project() {
     
     # Crear estructura
     step "Creando estructura de directorios..."
-    mkdir -p "$project_name"/{ASM,bas,obj,dist,raw,assets/sprites,assets/screen}
+    mkdir -p "$project_name"/{ASM,bas,obj,dist,raw,MUSIC,assets/sprites,assets/screen}
     success "Directorios creados"
-    
-    # Crear README en assets/screen
-    step "Creando guía de pantallas de carga..."
-    cat > "$project_name/assets/screen/README.md" << 'SCREEN_EOF'
-# Pantallas de Carga
-
-Coloca aquí tus imágenes PNG para convertirlas automáticamente a pantallas de carga CPC (formato SCN).
-
-## Configuración
-
-Edita `dev8bp.conf` y descomenta estas líneas:
-
-```bash
-LOADER_SCREEN="assets/screen"
-MODE=0
-```
-
-## Requisitos de las Imágenes
-
-### Resolución según modo:
-- **Modo 0**: 160x200 píxeles (16 colores)
-- **Modo 1**: 320x200 píxeles (4 colores)
-- **Modo 2**: 640x200 píxeles (2 colores)
-
-### Colores:
-Usa colores de la paleta Amstrad CPC.
-
-## Uso
-
-```bash
-# 1. Coloca tus PNG aquí
-cp /ruta/a/pantallas/*.png assets/screen/
-
-# 2. Compila
-dev8bp build
-
-# 3. Los archivos .scn se generan en obj/ y se añaden al DSK
-```
-
-## Cargar desde BASIC
-
-```basic
-10 LOAD "LOGO.SCN", &C000
-20 CALL &BC02
-```
-
-## Más Información
-
-https://github.com/destroyer-dcf/Dev8BP
-SCREEN_EOF
-    success "Guía de pantallas creada"
-    
-    # Crear README en assets/sprites
-    step "Creando guía de sprites..."
-    cat > "$project_name/assets/sprites/README.md" << 'SPRITES_EOF'
-# Sprites
-
-Coloca aquí tus archivos PNG para convertirlos automáticamente a ASM.
-
-## Configuración
-
-Edita `dev8bp.conf` y descomenta estas líneas:
-
-```bash
-SPRITES_PATH="assets/sprites"
-MODE=0
-SPRITES_OUT_FILE="ASM/sprites.asm"
-SPRITES_TOLERANCE=8
-```
-
-## Requisitos de los PNG
-
-### Ancho
-- **Modo 0**: múltiplo de 2 píxeles (2, 4, 6, 8, 10, 12, 14, 16...)
-- **Modo 1**: múltiplo de 4 píxeles (4, 8, 12, 16, 20...)
-- **Modo 2**: múltiplo de 8 píxeles (8, 16, 24, 32...)
-
-### Colores
-- **Modo 0**: máximo 16 colores
-- **Modo 1**: máximo 4 colores
-- **Modo 2**: máximo 2 colores
-
-### Paleta CPC
-Usa colores de la paleta Amstrad CPC o cercanos (con tolerancia).
-
-## Uso
-
-```bash
-# 1. Coloca tus PNG aquí
-cp /ruta/a/sprites/*.png assets/sprites/
-
-# 2. Compila
-dev8bp build
-
-# 3. El archivo ASM/sprites.asm se genera automáticamente
-```
-
-## Estructura Recomendada
-
-```
-assets/sprites/
-├── player.png
-├── enemies/
-│   ├── enemy1.png
-│   └── enemy2.png
-└── tiles/
-    ├── tile1.png
-    └── tile2.png
-```
-
-## Más Información
-
-https://github.com/destroyer-dcf/Dev8BP#-conversión-de-gráficos-png-a-asm
-SPRITES_EOF
-    success "Guía de sprites creada"
     
     # Crear configuración
     step "Creando archivo de configuración..."
@@ -177,6 +62,8 @@ $project_name/
 ├── assets/          # Recursos del proyecto
 │   ├── sprites/     # Sprites PNG (se convierten a ASM automáticamente)
 │   └── screen/      # Pantallas de carga PNG (se convierten a SCN)
+├── raw/             # Archivos binarios sin procesar
+├── MUSIC/           # Archivos de música
 ├── obj/             # Archivos intermedios (generado)
 └── dist/            # Imagen DSK final (generado)
 \`\`\`
