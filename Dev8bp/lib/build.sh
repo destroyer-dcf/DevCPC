@@ -16,6 +16,7 @@ build_project() {
     source "$DEV8BP_LIB/compile_c.sh"
     source "$DEV8BP_LIB/dsk.sh"
     source "$DEV8BP_LIB/graphics.sh"
+    source "$DEV8BP_LIB/screens.sh"
     
     header "Compilar Proyecto: $PROJECT_NAME"
     
@@ -55,6 +56,19 @@ build_project() {
         exit 1
     fi
     
+    # 1.5. Convertir pantallas de carga PNG a SCN si está configurado
+    if [[ -n "$LOADER_SCREEN" ]]; then
+        if ! convert_screens; then
+            has_errors=1
+        fi
+    fi
+    
+    # Si hubo errores en conversión de pantallas, no continuar
+    if [[ $has_errors -eq 1 ]]; then
+        error "Conversión de pantallas fallida"
+        exit 1
+    fi
+    
     # 2. Compilar ASM si está configurado
     if [[ -n "$BP_ASM_PATH" ]]; then
         if ! compile_asm; then
@@ -90,6 +104,14 @@ build_project() {
             exit 1
         fi
         echo ""
+    fi
+    
+    # 4.5. Añadir pantallas de carga al DSK si existen
+    if [[ -n "$LOADER_SCREEN" ]]; then
+        if ! add_screens_to_dsk; then
+            error "Error al añadir pantallas al DSK"
+            exit 1
+        fi
     fi
     
     # 5. Compilar C si está configurado

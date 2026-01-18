@@ -35,8 +35,59 @@ new_project() {
     
     # Crear estructura
     step "Creando estructura de directorios..."
-    mkdir -p "$project_name"/{ASM,bas,obj,dist,raw,assets/sprites}
+    mkdir -p "$project_name"/{ASM,bas,obj,dist,raw,assets/sprites,assets/screen}
     success "Directorios creados"
+    
+    # Crear README en assets/screen
+    step "Creando guía de pantallas de carga..."
+    cat > "$project_name/assets/screen/README.md" << 'SCREEN_EOF'
+# Pantallas de Carga
+
+Coloca aquí tus imágenes PNG para convertirlas automáticamente a pantallas de carga CPC (formato SCN).
+
+## Configuración
+
+Edita `dev8bp.conf` y descomenta estas líneas:
+
+```bash
+LOADER_SCREEN="assets/screen"
+MODE=0
+```
+
+## Requisitos de las Imágenes
+
+### Resolución según modo:
+- **Modo 0**: 160x200 píxeles (16 colores)
+- **Modo 1**: 320x200 píxeles (4 colores)
+- **Modo 2**: 640x200 píxeles (2 colores)
+
+### Colores:
+Usa colores de la paleta Amstrad CPC.
+
+## Uso
+
+```bash
+# 1. Coloca tus PNG aquí
+cp /ruta/a/pantallas/*.png assets/screen/
+
+# 2. Compila
+dev8bp build
+
+# 3. Los archivos .scn se generan en obj/ y se añaden al DSK
+```
+
+## Cargar desde BASIC
+
+```basic
+10 LOAD "LOGO.SCN", &C000
+20 CALL &BC02
+```
+
+## Más Información
+
+https://github.com/destroyer-dcf/Dev8BP
+SCREEN_EOF
+    success "Guía de pantallas creada"
     
     # Crear README en assets/sprites
     step "Creando guía de sprites..."
@@ -124,7 +175,8 @@ $project_name/
 ├── ASM/             # Código ensamblador 8BP
 ├── bas/             # Archivos BASIC
 ├── assets/          # Recursos del proyecto
-│   └── sprites/     # Sprites PNG (se convierten a ASM automáticamente)
+│   ├── sprites/     # Sprites PNG (se convierten a ASM automáticamente)
+│   └── screen/      # Pantallas de carga PNG (se convierten a SCN)
 ├── obj/             # Archivos intermedios (generado)
 └── dist/            # Imagen DSK final (generado)
 \`\`\`
