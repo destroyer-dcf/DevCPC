@@ -19,6 +19,19 @@ build_project() {
     
     header "Compilar Proyecto: $PROJECT_NAME"
     
+    # Detectar sistema operativo
+    local os_name=""
+    case "$(detect_os)" in
+        macos)   os_name="macOS" ;;
+        linux)   os_name="Linux" ;;
+        windows) os_name="Windows" ;;
+        *)       os_name="Unknown" ;;
+    esac
+    
+    # Detectar arquitectura
+    local arch_name=$(detect_arch)
+    
+    info "Sistema: $os_name ($arch_name)"
     info "Build Level: $BUILD_LEVEL ($(get_level_description $BUILD_LEVEL))"
     info "Memoria BASIC: MEMORY $(get_memory_for_level $BUILD_LEVEL)"
     echo ""
