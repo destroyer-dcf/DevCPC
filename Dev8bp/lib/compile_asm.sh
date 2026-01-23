@@ -2,6 +2,12 @@
 # ==============================================================================
 # compile_asm.sh - Compilación de código ASM con ABASM
 # ==============================================================================
+# shellcheck disable=SC2155
+
+# Cargar utilidades si no están cargadas
+if [[ -z "$(type -t register_in_map)" ]]; then
+    source "${DEV8BP_LIB:-$(dirname "$0")}/utils.sh"
+fi
 
 compile_asm() {
     if [[ -z "$BP_ASM_PATH" ]]; then
@@ -105,6 +111,10 @@ EOF
             info "Ubicación: $OBJ_DIR/8BP${BUILD_LEVEL}.bin"
             info "Tamaño:    $size bytes"
             echo ""
+            
+            # Registrar en map.cfg
+            local load_addr=$(get_load_addr_for_level $BUILD_LEVEL)
+            register_in_map "8BP${BUILD_LEVEL}.bin" "bin" "$load_addr" "$load_addr"
             
             # Verificar límites de gráficos
             verify_graphics_limit

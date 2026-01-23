@@ -2,6 +2,7 @@
 # ==============================================================================
 # config.sh - Gestión de configuración
 # ==============================================================================
+# shellcheck disable=SC2155
 
 # Cargar configuración del proyecto
 load_config() {

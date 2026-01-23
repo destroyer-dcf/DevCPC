@@ -2,6 +2,7 @@
 # ==============================================================================
 # utils.sh - Utilidades comunes
 # ==============================================================================
+# shellcheck disable=SC2155
 
 # Obtener versión de Dev8BP
 get_version() {
@@ -15,13 +16,21 @@ get_version() {
 
 # Dev8BP logo
 show_logo() {     
-    echo -e "${YELLOW}██████╗ ███████╗██╗   ██╗ █████╗ ██████╗ ██████╗  ${NC}"   
-    echo -e "${YELLOW}██╔══██╗██╔════╝██║   ██║██╔══██╗██╔══██╗██╔══██╗ ${NC}"   
-    echo -e "${YELLOW}██║  ██║█████╗  ██║   ██║╚█████╔╝██████╔╝██████╔╝ ${NC}"   
-    echo -e "${YELLOW}██║  ██║██╔══╝  ╚██╗ ██╔╝██╔══██╗██╔══██╗██╔═══╝  ${NC}"   
-    echo -e "${YELLOW}██████╔╝███████╗ ╚████╔╝ ╚█████╔╝██████╔╝██║      ${NC}"   
-    echo -e "${YELLOW}╚═════╝ ╚══════╝  ╚═══╝   ╚════╝ ╚═════╝ ╚═╝      ${NC}"   
+#     echo -e "${YELLOW}██████╗ ███████╗██╗   ██╗ █████╗ ██████╗ ██████╗  ${NC}"   
+#     echo -e "${YELLOW}██╔══██╗██╔════╝██║   ██║██╔══██╗██╔══██╗██╔══██╗ ${NC}"   
+#     echo -e "${YELLOW}██║  ██║█████╗  ██║   ██║╚█████╔╝██████╔╝██████╔╝ ${NC}"   
+#     echo -e "${YELLOW}██║  ██║██╔══╝  ╚██╗ ██╔╝██╔══██╗██╔══██╗██╔═══╝  ${NC}"   
+#     echo -e "${YELLOW}██████╔╝███████╗ ╚████╔╝ ╚█████╔╝██████╔╝██║      ${NC}"   
+#     echo -e "${YELLOW}╚═════╝ ╚══════╝  ╚═══╝   ╚════╝ ╚═════╝ ╚═╝      ${NC}"   
+#     echo ""
+    
+echo -e "${YELLOW}▛▀▖      ▞▀▖▛▀▖▞▀▖${NC}"
+echo -e "${YELLOW}▌ ▌▞▀▖▌ ▌▌  ▙▄▘▌  ${NC}"
+echo -e "${YELLOW}▌ ▌▛▀ ▐▐ ▌ ▖▌  ▌ ▖${NC}"
+echo -e "${YELLOW}▀▀ ▝▀▘ ▘ ▝▀ ▘  ▝▀ ${NC}"
+
 }
+
 
 # Verificar que estamos en un proyecto Dev8BP
 is_dev8bp_project() {
@@ -100,4 +109,28 @@ detect_arch() {
         aarch64|arm64) echo "arm64" ;;
         *) echo "$arch" ;;
     esac
+}
+
+# Registrar archivos en map.cfg
+register_in_map() {
+    local filename="$1"
+    local type="$2"
+    local load_addr="$3"
+    local exec_addr="$4"
+    
+    local map_file="$OBJ_DIR/DevCPC_map.cfg"
+    local map_tool="$DEV8BP_CLI_ROOT/tools/map/map.py"
+    
+    # Verificar que existe map.py
+    if [[ ! -f "$map_tool" ]]; then
+        warning "map.py no encontrado en: $map_tool"
+        return 0
+    fi
+    
+    local python_cmd=$(command -v python3 || command -v python)
+    
+    # Registrar en map.cfg
+    $python_cmd "$map_tool" --file "$map_file" --update --section "$filename" --key "type" --value "$type" > /dev/null 2>&1
+    $python_cmd "$map_tool" --file "$map_file" --update --section "$filename" --key "load" --value "$load_addr" > /dev/null 2>&1
+    $python_cmd "$map_tool" --file "$map_file" --update --section "$filename" --key "execute" --value "$exec_addr" > /dev/null 2>&1
 }

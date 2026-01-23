@@ -2,6 +2,7 @@
 # ==============================================================================
 # build.sh - Compilar proyecto
 # ==============================================================================
+# shellcheck disable=SC2155
 
 build_project() {
     if ! is_dev8bp_project; then
@@ -40,6 +41,9 @@ build_project() {
     # Crear directorios
     ensure_dir "$OBJ_DIR"
     ensure_dir "$DIST_DIR"
+    
+    # Limpiar map.cfg anterior
+    rm -f "${OBJ_DIR}/DevCPC_map.cfg"
     
     local has_errors=0
     

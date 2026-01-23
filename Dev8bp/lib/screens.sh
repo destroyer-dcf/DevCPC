@@ -2,6 +2,12 @@
 # ==============================================================================
 # screens.sh - Conversión de pantallas de carga PNG a SCN
 # ==============================================================================
+# shellcheck disable=SC2155
+
+# Cargar utilidades si no están cargadas
+if [[ -z "$(type -t register_in_map)" ]]; then
+    source "${DEV8BP_LIB:-$(dirname "$0")}/utils.sh"
+fi
 
 # Convertir pantallas de carga PNG a formato SCN
 convert_screens() {
@@ -88,6 +94,10 @@ convert_screens() {
                 
                 local size=$(stat -f%z "$output_file" 2>/dev/null || stat -c%s "$output_file" 2>/dev/null)
                 success "${name}.scn generado ($size bytes)"
+                
+                # Registrar en map.cfg
+                register_in_map "${name}.scn" "scn" "0xC000" "0xC000"
+                
                 ((converted++))
             else
                 error "No se generó ${name}.scn"

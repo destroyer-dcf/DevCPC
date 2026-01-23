@@ -2,6 +2,12 @@
 # ==============================================================================
 # compile_c.sh - Compilación de código C con SDCC
 # ==============================================================================
+# shellcheck disable=SC2155
+
+# Cargar utilidades si no están cargadas
+if [[ -z "$(type -t register_in_map)" ]]; then
+    source "${DEV8BP_LIB:-$(dirname "$0")}/utils.sh"
+fi
 
 compile_c() {
     if [[ -z "$C_PATH" ]]; then
@@ -126,6 +132,9 @@ compile_c() {
             
             if (cd "$OBJ_DIR" && $python_cmd "$dsk_tool" "$(pwd)/../$dsk_path" --put-bin "$basename.bin" --load-addr "$code_loc_hex" --start-addr "$code_loc_hex" > /dev/null 2>&1); then
                 success "Binario C añadido al DSK"
+                
+                # Registrar en map.cfg
+                register_in_map "$basename.bin" "bin" "$code_loc_hex" "$code_loc_hex"
             else
                 error "Error al añadir binario al DSK"
                 return 1

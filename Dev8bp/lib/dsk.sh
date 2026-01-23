@@ -2,6 +2,12 @@
 # ==============================================================================
 # dsk.sh - Gestión de imágenes DSK
 # ==============================================================================
+# shellcheck disable=SC2155
+
+# Cargar utilidades si no están cargadas
+if [[ -z "$(type -t register_in_map)" ]]; then
+    source "${DEV8BP_LIB:-$(dirname "$0")}/utils.sh"
+fi
 
 create_dsk() {
     local dsk_name="$1"
@@ -96,6 +102,10 @@ add_basic_to_dsk() {
             # Añadir al DSK
             if (cd "$OBJ_DIR" && $python_cmd "$dsk_tool" "$(pwd)/../$dsk_path" --put-ascii "$basename" > /dev/null 2>&1); then
                 info "  $basename"
+                
+                # Registrar en map.cfg
+                register_in_map "$basename" "ascii" "" ""
+                
                 ((count++))
             fi
         fi
@@ -140,6 +150,10 @@ add_raw_to_dsk() {
             # Añadir al DSK
             if (cd "$OBJ_DIR" && $python_cmd "$dsk_tool" "$(pwd)/../$dsk_path" --put-raw "$basename" > /dev/null 2>&1); then
                 info "  $basename"
+                
+                # Registrar en map.cfg
+                register_in_map "$basename" "raw" "" ""
+                
                 ((count++))
             fi
         fi
