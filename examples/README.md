@@ -1,6 +1,6 @@
-# Proyecto de Ejemplo - Dev8BP
+# Proyecto de Ejemplo - DevCPC
 
-Este es un proyecto de ejemplo que muestra cómo usar Dev8BP CLI.
+Este es un proyecto de ejemplo que muestra cómo usar DevCPC CLI.
 
 ## Contenido
 
@@ -11,7 +11,7 @@ Este es un proyecto de ejemplo que muestra cómo usar Dev8BP CLI.
 - **MUSIC/** - Archivos de música
 - **assets/sprites/** - Sprites PNG para convertir a ASM
 - **assets/screen/** - Pantallas PNG para convertir a SCN
-- **dev8bp.conf** - Configuración del proyecto
+- **devcpc.conf** - Configuración del proyecto
 
 ## Uso
 
@@ -19,31 +19,31 @@ Este es un proyecto de ejemplo que muestra cómo usar Dev8BP CLI.
 
 ```bash
 # Desde el directorio examples
-dev8bp build
+devcpc build
 ```
 
 ### Limpiar
 
 ```bash
-dev8bp clean
+devcpc clean
 ```
 
 ### Ver configuración
 
 ```bash
-dev8bp info
+devcpc info
 ```
 
 ### Validar
 
 ```bash
-dev8bp validate
+devcpc validate
 ```
 
 ### Ejecutar en emulador
 
 ```bash
-dev8bp run
+devcpc run
 ```
 
 ## Estructura generada
@@ -64,7 +64,7 @@ Después de compilar, se crean:
 
 ## Configuración
 
-Edita `dev8bp.conf` para cambiar:
+Edita `devcpc.conf` para cambiar:
 - Nombre del proyecto
 - Nivel de compilación
 - Rutas de código
@@ -95,6 +95,6 @@ Las pantallas SCN se generan automáticamente y se añaden al DSK durante la com
 Desde BASIC:
 ```basic
 10 MODE 0
-20 LOAD"DEV8BP.SCN",&C000
-30 REM Configurar paleta (ver obj/dev8bp.scn.info)
+20 LOAD"DEVCPC.SCN",&C000
+30 REM Configurar paleta (ver obj/devcpc.scn.info)
 ```

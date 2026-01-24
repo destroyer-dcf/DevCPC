@@ -1,4 +1,4 @@
-# Dev8BP CLI - Sistema de Compilación para 8BP
+# DevCPC CLI - Sistema de Compilación para 8BP
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE.md)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows%20WSL-lightgrey.svg)]()
@@ -8,14 +8,14 @@
 [![8BP](https://img.shields.io/badge/8BP-v0.43-purple.svg)](https://github.com/jjaranda13/8BP)
 
 <p align="center">
-  <img src="docs/images/help.png" alt="Dev8BP Help" width="800"/>
+  <img src="docs/images/help.png" alt="DevCPC Help" width="800"/>
 </p>
 
 ---
 
 
 
-## 🎯 ¿Por qué Dev8BP CLI?
+## 🎯 ¿Por qué DevCPC CLI?
 
 Esta idea nace de la necesidad de poder compilar la librería [8BP](https://github.com/jjaranda13/8BP) para Amstrad CPC en sistemas operativos que no fueran Windows de forma nativa. Gracias al ensamblador [ABASM](https://github.com/fragarco/abasm) creado por [fragarco](https://github.com/fragarco) todo esto ha sido posible.
 
@@ -53,7 +53,7 @@ Esta idea nace de la necesidad de poder compilar la librería [8BP](https://gith
 - **Python 3.x** (para scripts)
 - **ABASM** (ensamblador Z80) - instalado automáticamente
 - **SDCC** (compilador C) - opcional, solo si usas C
-- **RetroVirtualMachine** - opcional, solo si usas `dev8bp run`
+- **RetroVirtualMachine** - opcional, solo si usas `devcpc run`
 
 ‼️ **Importante:** Solo esta soportada la version v2.0 BETA-1 R7 (10/07/2019) de Retro Virtual Machine que es la unica que tiene las opciones de desarrollo activadas, tal y como se indica en su su [Web](https://www.retrovirtualmachine.org/blog/future/).
 
@@ -81,15 +81,15 @@ Si decides utilizar la conversion de imagenes a ASM necesitaras instalar la libr
 ## 🚀 Como Empezar
 
 <p align="center">
-  <img src="docs/images/demo1.gif" alt="Dev8BP Demo" width="100%"/>
+  <img src="docs/images/demo1.gif" alt="DevCPC Demo" width="100%"/>
 </p>
 
 ### 1. Instalación
 
 ```bash
 # Clonar el repositorio
-git clone https://github.com/destroyer-dcf/Dev8BP.git
-cd Dev8BP
+git clone https://github.com/destroyer-dcf/DevCPC.git
+cd DevCPC
 
 # Ejecutar instalación
 ./setup.sh
@@ -102,7 +102,7 @@ source ~/.bashrc  # o ~/.zshrc en macOS
 
 ```bash
 # Crear nuevo proyecto
-dev8bp new mi-juego
+devcpc new mi-juego
 
 # Ver la estructura creada
 ls -la
@@ -110,7 +110,7 @@ ls -la
 
 ### 3. Configurar el proyecto
 
-Edita `dev8bp.conf` según tus necesidades:
+Edita `devcpc.conf` según tus necesidades:
 
 ```bash
 # Configuración básica
@@ -138,7 +138,7 @@ cp /ruta/a/tus/archivos/*.bas bas/
 
 ```bash
 # Compilar todo
-dev8bp build
+devcpc build
 
 # Ver el resultado
 ls -la dist/
@@ -147,39 +147,39 @@ ls -la dist/
 ### 6. Ejecutar (opcional)
 
 ```bash
-# Configurar emulador en dev8bp.conf
+# Configurar emulador en devcpc.conf
 # RVM_PATH="/ruta/a/RetroVirtualMachine"
 # CPC_MODEL=464
 # RUN_FILE="8BP0.BIN"
 
 # Ejecutar
-dev8bp run
+devcpc run
 ```
 
 ---
 
 ## 📚 Comandos Disponibles
 
-### `dev8bp new <nombre>`
+### `devcpc new <nombre>`
 Crea un nuevo proyecto con estructura completa.
 
 ```bash
-dev8bp new mi-super-juego
+devcpc new mi-super-juego
 ```
 
 **Crea:**
 - Directorios: `ASM/`, `bas/`, `obj/`, `dist/`, `assets/sprites/`, `assets/screen/`
-- Archivo de configuración: `dev8bp.conf`
+- Archivo de configuración: `devcpc.conf`
 - `README.md` con instrucciones
 - `.gitignore` configurado
 
 ---
 
-### `dev8bp build`
+### `devcpc build`
 Compila el proyecto completo.
 
 ```bash
-dev8bp build
+devcpc build
 ```
 
 **Proceso:**
@@ -220,11 +220,11 @@ Catálogo del DSK:
 
 ---
 
-### `dev8bp clean`
+### `devcpc clean`
 Limpia archivos generados.
 
 ```bash
-dev8bp clean
+devcpc clean
 ```
 
 **Elimina:**
@@ -234,11 +234,11 @@ dev8bp clean
 
 ---
 
-### `dev8bp info`
+### `devcpc info`
 Muestra la configuración del proyecto.
 
 ```bash
-dev8bp info
+devcpc info
 ```
 
 **Muestra:**
@@ -269,11 +269,11 @@ Directorios:
 
 ---
 
-### `dev8bp validate`
+### `devcpc validate`
 Valida el proyecto antes de compilar.
 
 ```bash
-dev8bp validate
+devcpc validate
 ```
 
 **Verifica:**
@@ -309,16 +309,16 @@ dev8bp validate
 
 ---
 
-### `dev8bp run`
+### `devcpc run`
 Ejecuta el DSK en RetroVirtualMachine.
 
 ```bash
-dev8bp run
+devcpc run
 ```
 
 **Requisitos:**
 - RetroVirtualMachine instalado
-- `RVM_PATH` configurado en `dev8bp.conf`
+- `RVM_PATH` configurado en `devcpc.conf`
 
 **Características:**
 - Cierra sesiones anteriores automáticamente
@@ -330,25 +330,25 @@ dev8bp run
 
 ---
 
-### `dev8bp help`
+### `devcpc help`
 Muestra ayuda general.
 
 ```bash
-dev8bp help
+devcpc help
 ```
 
 ---
 
-### `dev8bp version`
+### `devcpc version`
 Muestra la versión.
 
 ```bash
-dev8bp version
+devcpc version
 ```
 
 ---
 
-## ⚙️ Configuración (dev8bp.conf)
+## ⚙️ Configuración (devcpc.conf)
 
 ### Configuración básica
 
@@ -440,7 +440,7 @@ RUN_FILE="8BP0.BIN"
 
 ```
 mi-juego/
-├── dev8bp.conf          # Configuración del proyecto
+├── devcpc.conf          # Configuración del proyecto
 ├── README.md            # Documentación
 ├── .gitignore          # Git ignore
 │
@@ -512,13 +512,13 @@ mi-juego/
 
 ## 🎨 Conversión de Gráficos PNG a ASM
 
-Dev8BP incluye una herramienta automática para convertir tus sprites PNG a formato ASM compatible con Amstrad CPC.
+DevCPC incluye una herramienta automática para convertir tus sprites PNG a formato ASM compatible con Amstrad CPC.
 
 
 ### Configuración
 
 ```bash
-# En dev8bp.conf
+# En devcpc.conf
 
 # Ruta donde están tus PNG (búsqueda recursiva)
 SPRITES_PATH="assets/sprites"
@@ -600,10 +600,10 @@ mi-juego/
 
 ```bash
 # 1. Coloca tus PNG en la carpeta assets/sprites/
-# 2. Configura SPRITES_PATH en dev8bp.conf
+# 2. Configura SPRITES_PATH en devcpc.conf
 SPRITES_PATH="assets/sprites"
 # 3. Compila normalmente
-dev8bp build
+devcpc build
 ```
 
 La conversión se ejecuta automáticamente antes de compilar el ASM.
@@ -679,20 +679,20 @@ SPRITES_TRANSPARENT_INK=0
 
 ```bash
 # 1. Crear proyecto
-dev8bp new mi-juego
+devcpc new mi-juego
 cd mi-juego
 
 # 2. Copiar tus PNG a la carpeta de sprites
 cp /ruta/a/sprites/*.png assets/sprites/
 
-# 3. Configurar dev8bp.conf
+# 3. Configurar devcpc.conf
 SPRITES_PATH="assets/sprites"
 MODE=0
 SPRITES_OUT_FILE="ASM/sprites.asm"
 SPRITES_TOLERANCE=8
 
 # 4. Compilar
-dev8bp build
+devcpc build
 ```
 
 **Salida:**
@@ -759,7 +759,7 @@ pip3 install Pillow
 
 ## �️ Conversión de Pantallas de Carga PNG a SCN
 
-Dev8BP incluye conversión automática de pantallas de carga PNG a formato SCN (formato nativo del Amstrad CPC) que se añaden directamente al DSK.
+DevCPC incluye conversión automática de pantallas de carga PNG a formato SCN (formato nativo del Amstrad CPC) que se añaden directamente al DSK.
 
 ### ¿Qué son las pantallas SCN?
 
@@ -773,7 +773,7 @@ Los archivos SCN son pantallas completas (160x200, 320x200 o 640x200) en formato
 ### Configuración
 
 ```bash
-# En dev8bp.conf
+# En devcpc.conf
 
 # Ruta donde están los PNG de pantallas de carga (búsqueda recursiva)
 LOADER_SCREEN="assets/screen"
@@ -820,12 +820,12 @@ mi-juego/
 mkdir -p assets/screen
 cp /ruta/a/pantalla.png assets/screen/
 
-# 2. Configurar dev8bp.conf
+# 2. Configurar devcpc.conf
 LOADER_SCREEN="assets/screen"
 MODE=0
 
 # 3. Compilar
-dev8bp build
+devcpc build
 ```
 
 ### Salida de la Compilación
@@ -927,14 +927,14 @@ Todos los modos usan el mismo tamaño porque ocupan toda la memoria de vídeo.
 
 ```bash
 # 1. Crear proyecto
-dev8bp new mi-aventura
+devcpc new mi-aventura
 cd mi-aventura
 
 # 2. Crear pantalla de título (160x200 px, 16 colores)
 # Usa tu editor gráfico favorito (GIMP, Photoshop, etc.)
 # Guarda en: assets/screen/title.png
 
-# 3. Configurar dev8bp.conf
+# 3. Configurar devcpc.conf
 LOADER_SCREEN="assets/screen"
 MODE=0
 
@@ -949,10 +949,10 @@ cat > bas/loader.bas << 'EOF'
 EOF
 
 # 5. Compilar
-dev8bp build
+devcpc build
 
 # 6. Ejecutar
-dev8bp run
+devcpc run
 ```
 
 ### Solución de Problemas
@@ -1056,7 +1056,7 @@ MEMORY 18999
 ### Configuración
 
 ```bash
-# En dev8bp.conf
+# En devcpc.conf
 RVM_PATH="/Applications/Retro Virtual Machine 2.app/Contents/MacOS/Retro Virtual Machine 2"
 CPC_MODEL=464
 RUN_FILE="8BP0.BIN"
@@ -1066,10 +1066,10 @@ RUN_FILE="8BP0.BIN"
 
 ```bash
 # Compilar y ejecutar
-dev8bp build && dev8bp run
+devcpc build && devcpc run
 
 # Solo ejecutar (si ya compilaste)
-dev8bp run
+devcpc run
 ```
 
 ### Características
@@ -1104,33 +1104,33 @@ Depende de los comandos 8BP que uses en tu juego:
 
 ### ¿Puedo cambiar BUILD_LEVEL después?
 
-Sí, simplemente cambia el valor en `dev8bp.conf` y recompila:
+Sí, simplemente cambia el valor en `devcpc.conf` y recompila:
 
 ```bash
-# Editar dev8bp.conf
+# Editar devcpc.conf
 BUILD_LEVEL=2
 
 # Recompilar
-dev8bp clean
-dev8bp build
+devcpc clean
+devcpc build
 ```
 
 ### ¿Qué hace make_all_mygame.asm?
 
-Es el archivo principal que incluye todos los demás archivos ASM de tu proyecto. Dev8BP modifica automáticamente la variable `ASSEMBLING_OPTION` en este archivo según tu `BUILD_LEVEL`.
+Es el archivo principal que incluye todos los demás archivos ASM de tu proyecto. DevCPC modifica automáticamente la variable `ASSEMBLING_OPTION` en este archivo según tu `BUILD_LEVEL`.
 
 ### ¿Puedo usar mi propio ensamblador?
 
-No, Dev8BP está diseñado específicamente para usar ABASM con la librería 8BP. ABASM está incluido y no necesitas instalarlo.
+No, DevCPC está diseñado específicamente para usar ABASM con la librería 8BP. ABASM está incluido y no necesitas instalarlo.
 
 ### ¿Funciona en Windows?
 
 Sí, pero necesitas WSL (Windows Subsystem for Linux) o Git Bash. El sistema está diseñado para entornos Unix (bash).
 
-### ¿Cómo actualizo Dev8BP?
+### ¿Cómo actualizo DevCPC?
 
 ```bash
-cd Dev8BP
+cd DevCPC
 git pull origin main
 ./setup.sh
 ```
@@ -1147,10 +1147,10 @@ La documentación completa de 8BP está en el [repositorio oficial de 8BP](https
 
 ```bash
 # Crear proyecto
-dev8bp new juego-asm
+devcpc new juego-asm
 cd juego-asm
 
-# Configurar (dev8bp.conf)
+# Configurar (devcpc.conf)
 PROJECT_NAME="juego-asm"
 BUILD_LEVEL=0
 BP_ASM_PATH="ASM"
@@ -1159,14 +1159,14 @@ BP_ASM_PATH="ASM"
 cp /ruta/a/make_all_mygame.asm ASM/
 
 # Compilar
-dev8bp build
+devcpc build
 ```
 
 ### Ejemplo 2: Proyecto ASM + BASIC
 
 ```bash
 # Crear proyecto
-dev8bp new juego-completo
+devcpc new juego-completo
 cd juego-completo
 
 # Configurar
@@ -1180,14 +1180,14 @@ cp /ruta/a/*.asm ASM/
 cp /ruta/a/*.bas bas/
 
 # Compilar
-dev8bp build
+devcpc build
 ```
 
 ### Ejemplo 3: Proyecto con C
 
 ```bash
 # Crear proyecto
-dev8bp new juego-c
+devcpc new juego-c
 cd juego-c
 
 # Configurar
@@ -1205,7 +1205,7 @@ cp -r /ruta/a/8BP_wrapper C/
 cp -r /ruta/a/mini_BASIC C/
 
 # Compilar
-dev8bp build
+devcpc build
 ```
 
 ---
@@ -1238,7 +1238,7 @@ MIT License - Copyright (c) 2026 Destroyer
 
 Si encuentras un Bug o deseas plantear alguna mejora ¡Compártelo!
 
-- [Bugs - Mejoras](https://github.com/destroyer-dcf/Dev8BP/issues)
+- [Bugs - Mejoras](https://github.com/destroyer-dcf/DevCPC/issues)
 
 
 ---
