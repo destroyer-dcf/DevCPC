@@ -146,6 +146,7 @@ devcpc build
 
 # Ver el resultado
 ls -la dist/
+
 ```
 
 ### 6. Ejecutar (opcional)
