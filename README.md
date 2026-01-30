@@ -31,6 +31,7 @@ Esta idea nace de la necesidad de poder compilar la librería [8BP](https://gith
 - ✅ **M4 BOARD** - Pruebas sobre tarjeta M4 con un solo comando
 - ✅ **PANTALLAS DE CARGA** - Creacion de pantallas de cargar desde una imagen png
 - ✅ **SPRITES** - Creacion de sprites desde una imagen png
+- ✅ **CREACION DE PROYECTOS** - Creacion de proyectos con ejemplos Basic, ASM o 8BP
 
 
 ### Herramientas integradas
