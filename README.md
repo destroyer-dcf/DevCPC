@@ -90,17 +90,55 @@ Si decides utilizar la conversion de imagenes a ASM necesitaras instalar la libr
 
 ### 1. Instalación
 
+Ejecuta el siguiente comando en tu terminal:
+
 ```bash
-# Clonar el repositorio
-git clone https://github.com/destroyer-dcf/DevCPC.git
-cd DevCPC
-
-# Ejecutar instalación
-./setup.sh
-
-# Recargar shell
-source ~/.bashrc  # o ~/.zshrc en macOS
+curl -fsSL https://destroyer.me/devcpc | bash
 ```
+
+O con `wget`:
+
+```bash
+wget -qO- https://destroyer.me/devcpc | bash
+```
+
+El instalador:
+- Descarga la última versión de DevCPC
+- Instala en `~/.DevCPC`
+- Configura automáticamente tu shell (bash/zsh)
+- Añade DevCPC al PATH
+
+### Después de la instalación
+
+Recarga tu shell:
+
+```bash
+source ~/.bashrc  # Para bash
+source ~/.zshrc   # Para zsh
+```
+
+O simplemente abre una nueva terminal.
+
+Verifica la instalación:
+
+```bash
+devcpc version
+```
+
+## Instalación Manual
+
+Si prefieres instalar manualmente:
+
+1. Descarga la última versión desde [Releases](https://github.com/destroyer-dcf/CPCDevKit/releases)
+2. Extrae el archivo:
+   ```bash
+   tar -xzf DevCPC-X.Y.Z.tar.gz
+   ```
+3. Ejecuta el script de instalación:
+   ```bash
+   cd CPCDevKit
+   ./setup.sh
+   ```
 
 ### 2. Crear tu primer proyecto
 
