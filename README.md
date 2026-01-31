@@ -123,6 +123,26 @@ Verifica la instalación:
 devcpc version
 ```
 
+### Actualización
+
+Para actualizar DevCPC a la última versión:
+
+```bash
+devcpc update
+```
+
+O reinstala ejecutando el instalador nuevamente:
+
+```bash
+curl -fsSL https://destroyer.me/devcpc | bash
+```
+
+**Nota:** Para reinstalar, primero debes borrar la instalación existente:
+```bash
+rm -rf ~/.DevCPC
+curl -fsSL https://destroyer.me/devcpc | bash
+```
+
 ### Instalación Manual
 
 Si prefieres instalar manualmente:
@@ -390,10 +410,63 @@ devcpc help
 ---
 
 ### `devcpc version`
-Muestra la versión.
+Muestra la versión instalada y verifica si hay actualizaciones disponibles.
 
 ```bash
 devcpc version
+```
+
+**Salida:**
+```
+DevCPC CLI v1.0.1
+
+⚠ Nueva versión disponible: v1.0.2 (actual: v1.0.1)
+Actualizar: curl -fsSL https://destroyer.me/devcpc | bash
+```
+
+---
+
+### `devcpc update`
+Actualiza DevCPC a la última versión disponible.
+
+```bash
+devcpc update
+```
+
+**Proceso:**
+1. ✅ Verifica la versión actual
+2. ✅ Consulta la última versión en GitHub Releases
+3. ✅ Descarga el archivo tar.gz de la release
+4. ✅ Extrae y reemplaza los archivos en `~/.DevCPC`
+5. ✅ Preserva tu configuración y proyectos
+6. ✅ Actualiza automáticamente
+
+**Ejemplo de salida:**
+```bash
+ℹ DevCPC CLI v1.0.1
+
+ℹ Verificando actualizaciones...
+✓ Última versión disponible: v1.0.2
+
+⚠ Nueva versión disponible: v1.0.2
+
+¿Deseas actualizar a v1.0.2? [S/n]: s
+
+ℹ Iniciando actualización...
+ℹ Descargando DevCPC v1.0.2...
+✓ Descarga completada
+ℹ Extrayendo archivos...
+ℹ Actualizando archivos en ~/.DevCPC...
+
+✓ DevCPC actualizado exitosamente a v1.0.2
+
+ℹ Verifica la instalación con: devcpc version
+```
+
+**Nota:** Si ya tienes la última versión instalada, el comando te lo indicará:
+```bash
+devcpc update
+✓ Ya tienes la última versión instalada
 ```
 
 ---
