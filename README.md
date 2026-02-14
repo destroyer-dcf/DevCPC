@@ -2,7 +2,6 @@
   <img src="docs/images/keyboard.png" alt="Amstrad CPC Keyboard" width="80%"/>
 </p>
 
-
 # DevCPC CLI - SDK para Amstrad CPC
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE.md)
