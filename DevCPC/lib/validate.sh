@@ -26,11 +26,21 @@ validate_project() {
         success "PROJECT_NAME: $PROJECT_NAME"
     fi
     
-    if [[ ! "$BUILD_LEVEL" =~ ^[0-4]$ ]]; then
-        error "BUILD_LEVEL debe ser 0-4 (actual: $BUILD_LEVEL)"
-        ((errors++))
-    else
-        success "BUILD_LEVEL: $BUILD_LEVEL ($(get_level_description $BUILD_LEVEL))"
+    # BUILD_LEVEL solo es requerido para proyectos 8BP
+    local is_8bp_project=0
+    if [[ -n "$ASM_PATH" && -f "$ASM_PATH/make_all_mygame.asm" ]]; then
+        is_8bp_project=1
+    fi
+    
+    if [[ $is_8bp_project -eq 1 ]]; then
+        if [[ ! "$BUILD_LEVEL" =~ ^[0-4]$ ]]; then
+            error "BUILD_LEVEL debe ser 0-4 para proyectos 8BP (actual: $BUILD_LEVEL)"
+            ((errors++))
+        else
+            success "BUILD_LEVEL: $BUILD_LEVEL ($(get_level_description $BUILD_LEVEL))"
+        fi
+    elif [[ -n "$BUILD_LEVEL" ]]; then
+        success "BUILD_LEVEL: $BUILD_LEVEL (opcional para este proyecto)"
     fi
     
     echo ""
