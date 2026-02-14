@@ -30,7 +30,7 @@ Esta idea nace de la necesidad de poder compilar la librería [8BP](https://gith
 - ✅ **DSK** - Generación de imagen de disco DSK con todos los archivos del proyecto
 - ✅ **CDT** - Generación de imagen de cinta CDT con todos los archivos del proyecto en el orden establecido
 - ✅ **RETRO VIRTUAL MACHINE** - Pruebas sobre emulador RVM con un solo comando
-- ✅ **M4 BOARD** - Pruebas sobre tarjeta M4 con un solo comando
+- ✅ **M4 BOARD** - Pruebas sobre tarjeta M4 con un solo comando (En desarrollo)
 - ✅ **PANTALLAS DE CARGA** - Creacion de pantallas de cargar desde una imagen png
 - ✅ **SPRITES** - Creacion de sprites desde una imagen png
 - ✅ **CREACION DE PROYECTOS** - Creacion de proyectos con ejemplos Basic, ASM o 8BP
@@ -49,7 +49,7 @@ Esta idea nace de la necesidad de poder compilar la librería [8BP](https://gith
 ### Herramientas Opcionales
 
 - [SDCC](http://sdcc.sourceforge.net/) Small Device C Compiler
-- [RetroVirtualMachine](https://www.retrovirtualmachine.org/) Emulaodr Amstrad CPC
+- [RetroVirtualMachine](https://www.retrovirtualmachine.org/) Emulador Amstrad CPC
 
 ### Plataformas soportadas
 - ✅ macOS (ARM64 y x86_64)
