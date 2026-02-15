@@ -50,6 +50,42 @@ validate_project() {
         success "BUILD_LEVEL: $BUILD_LEVEL (opcional para este proyecto)"
     fi
     
+    # Validar dependencia CPR ↔ CPR_EXECUTE
+    if [[ -n "$CPR" && -z "$CPR_EXECUTE" ]]; then
+        error "CPR está configurado pero CPR_EXECUTE no está definido"
+        error "CPR y CPR_EXECUTE son dependientes, deben estar ambos configurados"
+        ((errors++))
+    elif [[ -z "$CPR" && -n "$CPR_EXECUTE" ]]; then
+        error "CPR_EXECUTE está configurado pero CPR no está definido"
+        error "CPR y CPR_EXECUTE son dependientes, deben estar ambos configurados"
+        ((errors++))
+    elif [[ -n "$CPR" && -n "$CPR_EXECUTE" ]]; then
+        success "CPR: $CPR"
+        success "CPR_EXECUTE: $CPR_EXECUTE"
+    fi
+    
+    # Validar dependencia BAS_SOURCE ↔ BAS_LOADADDR
+    if [[ -n "$BAS_SOURCE" && -z "$BAS_LOADADDR" ]]; then
+        error "BAS_SOURCE está configurado pero BAS_LOADADDR no está definido"
+        error "BAS_SOURCE y BAS_LOADADDR son dependientes, deben estar ambos configurados"
+        ((errors++))
+    elif [[ -z "$BAS_SOURCE" && -n "$BAS_LOADADDR" ]]; then
+        error "BAS_LOADADDR está configurado pero BAS_SOURCE no está definido"
+        error "BAS_SOURCE y BAS_LOADADDR son dependientes, deben estar ambos configurados"
+        ((errors++))
+    fi
+    
+    # Validar dependencia LOADADDR ↔ SOURCE (para proyectos ASM sin 8BP)
+    if [[ -n "$LOADADDR" && -z "$SOURCE" ]]; then
+        error "LOADADDR está configurado pero SOURCE no está definido"
+        error "LOADADDR y SOURCE son dependientes, deben estar ambos configurados"
+        ((errors++))
+    elif [[ -z "$LOADADDR" && -n "$SOURCE" ]]; then
+        error "SOURCE está configurado pero LOADADDR no está definido"
+        error "LOADADDR y SOURCE son dependientes, deben estar ambos configurados"
+        ((errors++))
+    fi
+    
     echo ""
     
     # Validar rutas
@@ -112,6 +148,25 @@ validate_project() {
         fi
     fi
     
+    # Validar compilación de BASIC con ABASC
+    if [[ -n "$BAS_SOURCE" ]]; then
+        local bas_file=""
+        if [[ -n "$BASIC_PATH" && -f "$BASIC_PATH/$BAS_SOURCE" ]]; then
+            bas_file="$BASIC_PATH/$BAS_SOURCE"
+        elif [[ -f "$BAS_SOURCE" ]]; then
+            bas_file="$BAS_SOURCE"
+        fi
+        
+        if [[ -n "$bas_file" ]]; then
+            success "BAS_SOURCE: $BAS_SOURCE (compilación ABASC)"
+            success "  BAS_LOADADDR: $BAS_LOADADDR"
+            ((has_source++))
+        else
+            error "BAS_SOURCE no encontrado: $BAS_SOURCE"
+            ((errors++))
+        fi
+    fi
+    
     if [[ $has_source -eq 0 ]]; then
         warning "No hay código fuente configurado (ASM, BASIC o C)"
         ((warnings++))
@@ -134,6 +189,23 @@ validate_project() {
             ((warnings++))
         else
             success "SDCC instalado"
+        fi
+    fi
+    
+    echo ""
+    
+    # Validar emulador
+    step "Validando emulador..."
+    
+    if [[ -z "$RVM_PATH" ]]; then
+        warning "RVM_PATH no configurado - No hay emulador configurado para probar"
+        ((warnings++))
+    else
+        if [[ -f "$RVM_PATH" ]]; then
+            success "RVM_PATH: $RVM_PATH"
+        else
+            warning "RVM_PATH configurado pero el archivo no existe: $RVM_PATH"
+            ((warnings++))
         fi
     fi
     

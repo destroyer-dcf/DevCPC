@@ -490,6 +490,33 @@ PROJECT_NAME="MI_JUEGO"
 BUILD_LEVEL=0
 ```
 
+### ⚠️ Dependencias de Variables
+
+Algunas variables de configuración son **dependientes entre sí** y deben estar configuradas juntas. Si defines una, debes definir la otra:
+
+#### 1. Cartuchos CPR
+```bash
+CPR="${PROJECT_NAME}.cpr"     # Nombre del cartucho
+CPR_EXECUTE="loader.bas"      # Archivo a ejecutar
+```
+**Ambas variables son obligatorias** si quieres generar un cartucho CPR.
+
+#### 2. Compilación BASIC con ABASC
+```bash
+BAS_SOURCE="main.bas"         # Archivo .bas a compilar
+BAS_LOADADDR="0x170"          # Dirección de carga
+```
+**Ambas variables son obligatorias** si quieres compilar un archivo BASIC a binario.
+
+#### 3. Compilación ASM pura (sin 8BP)
+```bash
+LOADADDR=0x1200               # Dirección de carga
+SOURCE="main"                 # Archivo fuente (sin .asm)
+```
+**Ambas variables son obligatorias** para proyectos ASM sin 8BP (cuando no usas `BUILD_LEVEL`).
+
+> **Nota:** La validación (`devcpc validate`) verificará estas dependencias y mostrará errores si solo defines una variable de cada par.
+
 ### Niveles de compilación 8BP
 
 | Nivel | Descripción | MEMORY | Comandos | Tamaño |

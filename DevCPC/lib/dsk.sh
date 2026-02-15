@@ -100,6 +100,11 @@ add_basic_to_dsk() {
         if [[ -f "$file" ]]; then
             local basename=$(basename "$file")
             
+            # Saltar si este archivo está siendo compilado con ABASC
+            if [[ -n "$BAS_SOURCE" && "$basename" == "$BAS_SOURCE" ]]; then
+                continue
+            fi
+            
             # Copiar a obj/
             cp "$file" "$OBJ_DIR/$basename"
             

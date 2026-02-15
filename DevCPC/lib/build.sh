@@ -17,6 +17,7 @@ build_project() {
     # Cargar librerías de compilación
     source "$DEVCPC_LIB/compile_asm.sh"
     source "$DEVCPC_LIB/compile_c.sh"
+    source "$DEVCPC_LIB/compile_bas.sh"
     source "$DEVCPC_LIB/dsk.sh"
     source "$DEVCPC_LIB/cdt.sh"
     source "$DEVCPC_LIB/cpr.sh"
@@ -144,16 +145,24 @@ build_project() {
         fi
     fi
     
-    # 6. Añadir archivos BASIC
+    # 6. Compilar BASIC si está configurado
+    if [[ -n "$BAS_SOURCE" ]]; then
+        if ! compile_bas; then
+            error "Compilación BASIC fallida\n"
+            exit 1
+        fi
+    fi
+    
+    # 7. Añadir archivos BASIC sin compilar
     add_basic_to_dsk || true
     
-    # 7. Añadir archivos RAW
+    # 8. Añadir archivos RAW
     add_raw_to_dsk || true
     
-    # 8. Mostrar contenido del DSK
+    # 9. Mostrar contenido del DSK
     show_dsk_catalog
     
-    # 9. Crear CDT si está configurado
+    # 10. Crear CDT si está configurado
     if [[ -n "$CDT" && -n "$CDT_FILES" ]]; then
         if ! create_cdt; then
             error "Error al crear cinta CDT"
@@ -162,7 +171,7 @@ build_project() {
         show_cdt_catalog
     fi
     
-    # 10. Crear CPR (cartucho) si está configurado
+    # 11. Crear CPR (cartucho) si está configurado
     if [[ -n "$CPR" ]]; then
         echo ""
         header "Crear Cartucho CPR"
