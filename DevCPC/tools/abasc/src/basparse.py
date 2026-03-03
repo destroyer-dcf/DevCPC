@@ -441,33 +441,25 @@ class LocBasParser:
         """ <CONST> := IDENT = INT """
         self._advance()
         tk = self._expect(TokenType.IDENT)
-        vartype = AST.exptype_fromname(tk.lexeme)
-        self._expect(TokenType.COMP, lex="=")
-        if not self._current_is(TokenType.INT):
-            self._raise_error(2, tk, "integer number expected")
-        val = self._expect(TokenType.INT)
         entry = self.symtable.find(tk.lexeme, SymType.Variable, self.context)
         if entry is not None:
             self._raise_error(2, tk, "constant redefinition")
-        if vartype != AST.ExpType.Integer:
-            self._raise_error(13, tk)
-        # Add the variable as a regular one
+        self._expect(TokenType.COMP, lex="=")
+        value = self._parse_int_expression(allowcast=False)
         self.symtable.add(
             ident=tk.lexeme,
             info=SymEntry(
                 symtype=SymType.Variable,
                 exptype=AST.ExpType.Integer,
                 locals=SymTable(),
-                datasz= AST.exptype_memsize(AST.ExpType.Integer)
+                datasz= AST.exptype_memsize(AST.ExpType.Integer),
+                const=value
             ),
             context=self.context
         )
-        # Set its constant properties
-        entry = self.symtable.find(tk.lexeme, SymType.Variable, self.context)
-        entry.const = cast(int, val.value)  # type: ignore [union-attr]
         args: list[AST.Statement] = []
         args.append(AST.Variable(tk.lexeme, AST.ExpType.Integer))
-        args.append(AST.Integer(value=entry.const)) # type: ignore [union-attr]
+        args.append(value)
         return AST.Command(name="CONST", args=args)
 
     @astnode
@@ -590,7 +582,7 @@ class LocBasParser:
             if vartype == AST.ExpType.String:
                 if self._current_is(TokenType.KEYWORD, lexeme="FIXED"):
                     self._advance()
-                    num = self._expect(TokenType.INT)
+                    num = self._parse_int_or_constant()
                     datasz = cast(int, num.value) + 1
                     if datasz > 255 or datasz < 2:
                         self._raise_error(6, num, info="valid string size range is [1 - 254]")
@@ -635,7 +627,10 @@ class LocBasParser:
                 info.nargs = len(param.sizes)    # type: ignore [union-attr]
                 info.indexes = list(param.sizes) # type: ignore [union-attr]
             else:
-                paramname = self._expect(TokenType.IDENT).lexeme
+                tk = self._expect(TokenType.IDENT)
+                paramname = tk.lexeme
+                if "$." in paramname:
+                    self._raise_error(2, tk, "unexpected record access")
                 paramtype = AST.exptype_fromname(paramname)
                 param = AST.Variable(name=paramname, etype=paramtype)
                 paramsym = SymType.Param
@@ -779,6 +774,19 @@ class LocBasParser:
                 self._raise_error(10, tk)
         return AST.Command(name="DIM", args=args)
 
+    def _parse_int_or_constant(self) -> Token:
+        """ <const_int> ::= IDENT.const | INT """
+        if self._current_is(TokenType.INT):
+            return self._advance()
+        tk = self._current()
+        if tk.type == TokenType.IDENT:
+            self._advance()
+            entry = self.symtable.find(tk.lexeme, SymType.Variable, self.context)
+            if entry is not None and entry.const is not None:
+                if isinstance(entry.const, AST.Integer):
+                    return Token(TokenType.INT, "", tk.line, tk.col, entry.const.value)
+        self._raise_error(2, tk, "constant or literal integer was expected")
+
     @astnode
     def _parse_array_declaration(self, start = TokenType.LPAREN, end = TokenType.RPAREN) -> AST.Array:
         """ <array_declaration> ::= IDENT([INT[,INT]]) """
@@ -788,18 +796,18 @@ class LocBasParser:
         sizes = [10]
         self._expect(start)
         if not self._current_is(TokenType.RPAREN):
-            tk = self._expect(TokenType.INT)
+            tk = self._parse_int_or_constant()
             sizes = [cast(int, tk.value)]
             if sizes[-1] < 0 or sizes[-1] > 255: self._raise_error(9, tk)
             while self._current_is(TokenType.COMMA):
                 self._advance()
-                tk = self._expect(TokenType.INT)
+                tk = self._parse_int_or_constant()
                 sizes.append(cast(int, tk.value))
                 if sizes[-1] < 0 or sizes[-1] > 255: self._raise_error(9, tk)
         self._expect(end)
         if vartype == AST.ExpType.String and self._current_is(TokenType.KEYWORD, lexeme="FIXED"):
             self._advance()
-            num = self._expect(TokenType.INT)
+            num = self._parse_int_or_constant()
             datasz = cast(int, num.value) + 1
             if datasz > 255 or datasz < 1:
                 self._raise_error(6, num, info="valid string size range is [1 - 255]")
@@ -1037,23 +1045,23 @@ class LocBasParser:
         vartype = AST.exptype_fromname(var)
         if not AST.exptype_isint(vartype):
             self._raise_error(13, tk)
-        self._expect(TokenType.COMP, "=")
-        info = self.symtable.find(ident=var, stype=SymType.Variable, context=self.context)
-        if info is None:
-            # Lets add the FOR variable to the symtable as it persists
-            # in Locomotive BASIC after the loop ends. But check that we are not
-            # dealing with a constant
-            self._check_noconst(var, tk)
-            self.symtable.add(
+        # Let's check that we are not dealing with a constant
+        self._check_noconst(var, tk)
+        # FOR can declare variables so add it (or increase writes)
+        inserted = self.symtable.add(
                 ident=var,
                 info=SymEntry(
                     symtype=SymType.Variable,
                     exptype=vartype,
                     locals=SymTable(),
-                    datasz=AST.exptype_memsize(vartype)
+                    datasz=AST.exptype_memsize(vartype),
+                    writes=2    # do not consider this as only one write so we block "optimizations"
                 ),
                 context=self.context
             )
+        if not inserted:
+            self._raise_error(2, tk)
+        self._expect(TokenType.COMP, "=")
         start = self._parse_int_expression()
         self._expect(TokenType.KEYWORD, "TO")
         end = self._parse_int_expression()
@@ -2043,7 +2051,9 @@ class LocBasParser:
     @astnode
     def _parse_RECORD(self) -> AST.Command:
         """ <RECORD> ::= RECORD IDENT; IDENT[,IDENT]* """
-        self._advance()
+        tk = self._advance()
+        if self.context != "":
+            self._raise_error(2, tk, "records must be declared in the global scope")
         tk = self._expect(TokenType.IDENT)
         offset = 0
         root = tk.lexeme
@@ -2055,7 +2065,7 @@ class LocBasParser:
             datasz = AST.exptype_memsize(vartype)
             if vartype == AST.ExpType.String and self._current_is(TokenType.KEYWORD, lexeme="FIXED"):
                 self._advance()
-                num = self._expect(TokenType.INT)
+                num = self._parse_int_or_constant()
                 datasz = cast(int, num.value) + 1
             inserted = self.symtable.add(
                 ident=var,
@@ -2066,7 +2076,6 @@ class LocBasParser:
                     datasz=datasz,
                     memoff=offset
                 ),
-                context=self.context
             )
             if not inserted:
                 self._raise_error(2, tk, info="record redifinition")
@@ -3015,11 +3024,13 @@ class LocBasParser:
             varname = tkvar.lexeme
             vartype = etype
             tk = self._current()
-            if etype == AST.ExpType.String and tk.type == TokenType.IDENT and '.' in tk.lexeme:
+            if etype == AST.ExpType.String and tk.type == TokenType.IDENT and tk.lexeme[0] == '.':
                 # This is a record
                 tk = self._advance()
                 varname = varname + tk.lexeme
                 vartype = AST.exptype_fromname(varname)
+                if self.symtable.find(tk.lexeme[1:], SymType.Record) is None:
+                    self._raise_error(2, tk, "undefined record item")
             return AST.ArrayItem(name=varname, etype=vartype, args=indexes) # type: ignore[union-attr]
         # regular variable
         return AST.Variable(name=tkvar.lexeme, etype=etype)
@@ -3169,7 +3180,7 @@ class LocBasParser:
         if isinstance(target, AST.Variable):
             # Simple variables are declared through assinements so we
             # have to add them to the symtable now but let's check that it
-            # is not a constant or a parameter
+            # is not a constant, a parameter or a record access
             self._check_noconst(target.name, tk)
             entry = self.symtable.find(target.name, SymType.Param, self.context)
             if entry is None:

@@ -74,6 +74,16 @@ class BasOptimizer:
             return nnode
         return node
     
+    def _op_CONST(self, node: AST.Command) -> AST.Statement:
+        if not isinstance(node.args[1], AST.Integer):
+            node.args[1] = self._op_statement(node.args[1])
+            if isinstance(node.args[1], AST.Integer):
+                varname = node.args[0].name # type: ignore [attr-defined]
+                entry = self.syms.find(varname, SYM.SymType.Variable, self.context)
+                if entry is not None:
+                    entry.const = node.args[1]
+        return node
+
     def _op_END_FUNCTION(self, node: AST.Command) -> AST.Statement:
         self.context = ""
         return node
@@ -141,9 +151,9 @@ class BasOptimizer:
         """
         entry = self.syms.find(node.name, SYM.SymType.Variable, self.context)
         if entry is not None and entry.writes == 1:
-            if entry.const is not None:
+            if isinstance(entry.const, AST.Integer):
                 self.modified = True
-                nnode = AST.Integer(value=entry.const)
+                nnode = AST.Integer(value=entry.const.value)
                 nnode.line = node.line
                 nnode.col = node.col
                 return nnode
@@ -155,7 +165,7 @@ class BasOptimizer:
             if isinstance(node.source, AST.Integer):
                 entry = self.syms.find(node.target.name, SYM.SymType.Variable, self.context)
                 if entry is not None and entry.writes == 1 and entry.const is None:
-                    entry.const = node.source.value
+                    entry.const = node.source
                     self.modified = True
                     nnode = AST.Nop()
                     nnode.line = node.line
@@ -203,13 +213,7 @@ class BasOptimizer:
         return stmt
 
     def _op_statement(self, stmt: AST.Statement) -> AST.Statement:
-        if isinstance(stmt, AST.Variable):
-            stmt = self._op_variable(stmt)
-        elif isinstance(stmt, AST.BinaryOp):
-            stmt = self._op_binaryop(stmt)
-        elif isinstance(stmt, AST.Assignment):
-            stmt = self._op_assignment(stmt)
-        elif isinstance(stmt, AST.If):
+        if isinstance(stmt, AST.If):
             stmt = self._op_IF(stmt)
         elif isinstance(stmt, AST.ForLoop):
             stmt = self._op_FOR(stmt)
@@ -226,9 +230,14 @@ class BasOptimizer:
                 stmt.args[i] = self._op_statement(stmt.args[i])
             stmt = self._op_keyword(stmt)
         elif isinstance(stmt, AST.Command):
-            for i in range(0, len(stmt.args)):
-                stmt.args[i] = self._op_statement(stmt.args[i])
-            stmt = self._op_keyword(stmt)
+            if stmt.name == "CONST":
+                # CONST is special because the first argument is the variable
+                # and should not be go through normal optimization
+                stmt = self._op_CONST(stmt)
+            else:
+                for i in range(0, len(stmt.args)):
+                    stmt.args[i] = self._op_statement(stmt.args[i])
+                stmt = self._op_keyword(stmt)
         elif isinstance(stmt, AST.DefSUB):
             self.context = stmt.name
         elif isinstance(stmt, AST.DefFUN):
@@ -236,6 +245,12 @@ class BasOptimizer:
         elif isinstance(stmt, AST.RSX):
             for i in range(0, len(stmt.args)):
                 stmt.args[i] = self._op_statement(stmt.args[i])
+        elif isinstance(stmt, AST.Assignment):
+            stmt = self._op_assignment(stmt)
+        elif isinstance(stmt, AST.BinaryOp):
+            stmt = self._op_binaryop(stmt)
+        elif isinstance(stmt, AST.Variable):
+            stmt = self._op_variable(stmt)
         return stmt
       
     def optimize_ast(self, program: AST.Program, syms: SYM.SymTable) -> tuple[AST.Program, SYM.SymTable]:

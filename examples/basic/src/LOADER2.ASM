@@ -149,8 +149,8 @@ rt_print_nl:
 _runtime_end_:
 
 ; DATA must be allocated outside of Firmware memory area
-if ($ < &4000)
-    org  &4000
+if ($ < &40)
+    org  &40
 endif
 _data_:
     

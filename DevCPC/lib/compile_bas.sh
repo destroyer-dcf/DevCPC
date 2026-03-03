@@ -61,22 +61,23 @@ compile_bas() {
     info "Archivo:    $BAS_SOURCE"
     info "Dirección:  $load_addr"
     info "ABASC:      $abasc_path"
+    info "ABASM:      $abasm_path"
     echo ""
     
     # Limpiar archivos anteriores
     step "Limpiando archivos anteriores..."
-    rm -f "$OBJ_DIR/$basename".* 2>/dev/null || true
+    rm -f "$OBJ_DIR/$basename".asm "$OBJ_DIR/$basename".bin 2>/dev/null || true
     
-    # Compilar con ABASC (que internamente llama a ABASM)
+    # Compilar con ABASC
     step "Compilando BASIC con ABASC..."
     echo ""
     
     local abasc_output
-    if abasc_output=$($python_cmd "$abasc_path" "$bas_file" -o "$OBJ_DIR/$basename" 2>&1); then
+    if abasc_output=$($python_cmd "$abasc_path" "$bas_file" -o "$OBJ_DIR/$basename" --data "$load_addr" 2>&1); then
         echo "$abasc_output"
         
-        if [[ ! -f "$OBJ_DIR/$basename.bin" ]]; then
-            error "Error: No se generó $basename.bin"
+        if [[ ! -f "$OBJ_DIR/$basename.asm" ]]; then
+            error "Error: No se generó $basename.asm"
             return 1
         fi
         
@@ -85,6 +86,27 @@ compile_bas() {
     else
         error "Error en compilación ABASC:"
         echo "$abasc_output"
+        return 1
+    fi
+    
+    # Ensamblar con ABASM
+    step "Ensamblando con ABASM..."
+    echo ""
+    
+    local abasm_output
+    if abasm_output=$($python_cmd "$abasm_path" "$OBJ_DIR/$basename.asm" -o "$OBJ_DIR/$basename.bin" 2>&1); then
+        echo "$abasm_output"
+        
+        if [[ ! -f "$OBJ_DIR/$basename.bin" ]]; then
+            error "Error: No se generó $basename.bin"
+            return 1
+        fi
+        
+        success "Ensamblado ABASM exitoso"
+        echo ""
+    else
+        error "Error en ensamblado ABASM:"
+        echo "$abasm_output"
         return 1
     fi
     

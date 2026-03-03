@@ -209,7 +209,15 @@ ABASC: USER MANUAL
   - [Verifying BASIC Code](#verifying-basic-code)
   - [Debugging our Code](#debugging-our-code)
 - [Appendix II: Extending the Compiler](#appendix-ii-extending-the-compiler)
-
+- [Appendix III: The BASE Library](#appendix-iii-the-base-library)
+  - [BASE Constants and routines](#base-constants-and-routines)
+- [Appendix IV: CPCTELERA](#appendix-iv-cpctelera)
+  - [CPCTelera Constants and routines](#cpctelera-constants-and-routines)
+- [Appendix V: CPCRSLIB](#appendix-v-cpcrslib)
+  - [CPCRSlib Constants and routines](#cpcrslib-constants-and-routines)
+- [Appendix VI: Installing the Visual Code Extension](#appendix-vi-installing-the-visual-code-extension)
+  - [Installation](#installation)
+- [Changelog](#changelog)
 
 ---
 
@@ -619,10 +627,10 @@ Another option is to modify the program’s assembly code directly. During compi
 
 The ABASC installation includes a directory called `lib`. Any `.BAS` file can be placed there to be included in any of your programs using the `CHAIN MERGE` command.
 
-`CHAIN MERGE` will first try to resolve any file to include against the local directory of our source code. If the specified file is not local to the program, it will then search in the ABASC `lib` directory, treating it as a "library" — a reusable `.BAS` file that can be used in any project. For example, we can test the `memory.bas` file distributed with ABASC using this simple program:
+`CHAIN MERGE` will first try to resolve any file to include against the local directory of our source code. If the specified file is not local to the program, it will then search in the ABASC `lib` directory, treating it as a "library" — a reusable `.BAS` file that can be used in any project. For example, we can test the `base/memory.bas` file distributed with ABASC using this simple program:
 
 ```basic
-CHAIN MERGE "memory.bas"
+CHAIN MERGE "base/memory.bas"
 
 A$="Hello world"
 B$=""
@@ -631,6 +639,8 @@ CALL MEMSET(&C000, &4000, 0)
 CALL MEMCOPY(@B$, @A$, LEN(A$)+1)
 PRINT B$
 ```
+
+`ABASC` includes two ready to use libraries for game development: `cpctelera` and `cpcrslib`. Both are well-known C libraries and Frameworks that has been ported to be used with `BASC`. The exact functions offered by each one are listed in its own appendices.
 
 ---
 
@@ -2359,3 +2369,824 @@ Finally, the `examples` directory contains several sample programs that can be c
 
 ---
 
+# Appendix III: The BASE Library
+
+`BASE` is a library that exposes some useful routines previously published in books such as "Ready made machine language routines for the Amstrad" or available as firmware calls.
+
+To include its content in any project, simply add the line:
+
+```basic
+chain merge "base/base.bas"
+```
+
+## BASE Constants and routines
+
+* `base/bytepos.bas`
+
+' In `ABASC` there is no support for byte-type data. All integers are
+' 16 bits. These routines allow you to encode a position
+' X,Y where each component occupies a byte. For example:
+' DIM positions(1)
+' positions(0) = bytePosSet(5,5)
+' positions(1) = bytePosSet(5,6)
+FUNCTION bytePosSet(x, y)
+FUNCTION bytePosGetX(bytepos)
+FUNCTION bytePosGetY(intvalue)
+FUNCTION bytePosSetX(bytepos, x)
+FUNCTION bytePosSetY(intvalue, y)
+
+* `base/memory.bas`
+
+SUB memCopy(dest, src, nbytes)
+SUB memSet(dest, size, bytevalue)
+
+* `base/screen.bas`
+
+' Equivalent to calling the firmware routine SCR INITIALIZE
+SUB scrInitialize
+
+' Routines that return video memory positions
+FUNCTION scrDotPos(x, y)
+FUNCTION scrNextByte(vmem)
+FUNCTION scrPrevByte(vmem)
+FUNCTION scrNextLine(vmem)
+FUNCTION scrPrevLine(vmem)
+
+' Drawing routines for shapes
+SUB scrFillBox(x1, y1, x2, y2, npen)
+SUB scrDrawBox(x1, y1, x2, y2)
+SUB scrDrawTriangle(x1, y1, x2, y2, x3, y3)
+SUB scrDrawPolygon(x1, y1, x2, y2, x3, y3, x4, y4)
+
+' Draws a sprite of W bytes x H lines at position X,Y
+' on the screen. Expects that the information for this sprite
+' has been added to the program via DATA, so that before calling
+' this routine, the sprite to be painted is chosen via a RESTORE.
+' The first two bytes of sprite information indicate its
+' size (W and H).
+SUB scrDrawSprite(x, y)()
+FUNCTION scrPeekColor(x, y)()
+
+' Routines that use the firmware to provide support for a
+' double buffer. The second video buffer uses memory starting
+' at position 0x4000. Programs that use these routines must
+' be compiled with the --data=0x8000 option to leave space for this buffer.
+SUB scrInitDoubleBuffer()
+SUB scrSwapDoubleBuffer()
+
+' Routines that use the firmware to set the video memory start address
+' or its offset.
+SUB scrSetLocation(memaddr)
+FUNCTION scrGetLocation()
+SUB scrSetOffset(offset)
+FUNCTION scrGetOffset()
+SUB scrSetVideoLocation(base, offset)
+
+' Routines that scroll the screen
+SUB scrScrollUp()
+SUB scrScrollDown()
+
+' Routines to check for collision between point and a rectangle or
+' rectangle agains rectangle
+FUNCTION scrCheckPointRect(pointx, pointy, recx, recy, recwidth, recheight)
+FUNCTION scrCheckRectRect(recx1, recy1, recw1, rech1, recx2, recy2, recw2, rech2)
+
+* `base/text.bas`
+
+' Returns the ASCII code of the screen character at position x,y
+FUNCTION txtReadAsc(x, y)
+
+' Prints the text$ string rotated 90 degrees to the left. Overwrites the first available UDG, so it cannot be used with SYMBOL AFTER 256
+SUB txtRotateLeft(text$, x, y)
+
+' Prints the text$ string rotated 90 degrees to the right. Overwrites the first available UDG, so it cannot be used with SYMBOL AFTER 256
+SUB txtRotateRight(text$, x, y)
+
+' Prints the text$ string doubled in size. The top part is pointed with pen1 ink,
+' while the bottom part uses pen2 ink.
+SUB txtPrintBig(text$, x, y, pen1, pen2)
+
+---
+
+# Appendix IV: CPCTELERA
+
+CPCtelera is an integrated development framework for creating Amstrad CPC games and content. The original distribution, including several additional tools, can be downloaded from:
+
+* [CPCTelera Github page](https://github.com/lronaldo/cpctelera)
+
+The package includes a very complehensive documentation. Additionally, `ABASC` offers several of the original examples already translated to `ABASC` syntax in the directory `examples/cpctelera`.
+
+To incorporate the library to any `ABASC` project the user only need to reference the main module file with the following command:
+
+```basic
+chain merge "cpctelera/cpctelera.bas"
+```
+
+## CPCTelera Constants and routines
+
+* `cpctelera/audio.bas`:
+
+```basic
+CONST AY.CHANNELA
+CONST AY.CHANNELB
+CONST AY.CHANNELC
+CONST AY.CHANNELALL
+
+FUNCTION    cpctakpDigidrumStatus
+SUB         cpctakpMusicInit(songdata)
+SUB         cpctakpMusicPlay
+SUB         cpctakpSetFadeVolume(fadelevel)
+FUNCTION    cpctakpSFXGetInstrument(channel)
+SUB         cpctakpSFXInit(songdata)
+SUB         cpctakpSFXPlay(sfxnum, vol, note, nspeed, invertedpitch, channelbitmask)
+SUB         cpctakpSFXStop(chbitmask)
+SUB         cpctakpSFXStopAll
+FUNCTION    cpctakpSongLoopTimes
+SUB         cpctakpStop
+```
+
+* `cpctelera/bitarray.bas`
+
+```basic
+FUNCTION    cpctGetBit(array$, index)
+FUNCTION    cpctGet2Bits(array$, index)
+FUNCTION    cpctGet4Bits(array$, index)
+FUNCTION    cpctGet6Bits(array$, index)
+SUB         cpctSetBit(array$, value, index)
+SUB         cpctSet2Bits(array$, value, index)
+SUB         cpctSet4Bits(array$, value, index)
+SUB         cpctSet6Bits(array$, value, index)
+```
+
+* `cpctelera/easytilemaps`
+
+```basic
+SUB     cpctetmDrawTileBox2x4(x, y, w, h, mapw, videomem, timemap)
+SUB     cpctetmSetDrawTilemap2x4f(vieww, viewh, vmem, tiles)
+SUB     cpctetmSetDrawTilemap4x8ag(vieww, viewh, tilemapw, tiles)
+SUB     cpctetmDrawTilemap4x8ag(memaddress, tileids)
+SUB     cpctetmSetTileset2x4(tileset)
+```
+
+* `cpctelera/firmware`
+
+```basic
+FUNCTION    cpctDisableFirmware
+SUB         cpctDisableLowerROM
+SUB         cpctDisableUpperROM
+SUB         cpctEnableLowerROM
+SUB         cpctEnableUpperROM
+SUB         cpctReenableFirmware
+FUNCTION    cpctRemoveInterruptHandler
+SUB         cpctSetInterruptHandler(cbaddress)
+```
+
+* `cpctelera/keyboard`
+
+```basic
+CONST KEY.UP           
+CONST KEY.RIGHT        
+CONST KEY.DOWN         
+CONST KEY.F9           
+CONST KEY.F6           
+CONST KEY.F3           
+CONST KEY.ENTER        
+CONST KEY.FDOT         
+CONST KEY.LEFT         
+CONST KEY.COPY         
+CONST KEY.F7           
+CONST KEY.F8           
+CONST KEY.F5           
+CONST KEY.F1           
+CONST KEY.F2           
+CONST KEY.F0           
+CONST KEY.CLR          
+CONST KEY.OPENBRACKET  
+CONST KEY.RETURN       
+CONST KEY.CLOSEBRACKET 
+CONST KEY.F4           
+CONST KEY.SHIFT        
+CONST KEY.BACKSLASH    
+CONST KEY.CONTROL      
+CONST KEY.CARET        
+CONST KEY.HYPHEN       
+CONST KEY.AT           
+CONST KEY.P            
+CONST KEY.SEMICOLON    
+CONST KEY.COLON        
+CONST KEY.SLASH        
+CONST KEY.DOT          
+CONST KEY.0            
+CONST KEY.9            
+CONST KEY.O            
+CONST KEY.I            
+CONST KEY.L            
+CONST KEY.K            
+CONST KEY.M            
+CONST KEY.COMMA        
+CONST KEY.8            
+CONST KEY.7            
+CONST KEY.U            
+CONST KEY.Y            
+CONST KEY.H            
+CONST KEY.J            
+CONST KEY.N            
+CONST KEY.SPACE        
+CONST KEY.6            
+CONST JOY1.UP          
+CONST KEY.5            
+CONST JOY1.DOWN        
+CONST KEY.R            
+CONST JOY1.LEFT        
+CONST KEY.T            
+CONST JOY1.RIGHT       
+CONST KEY.G            
+CONST JOY1.FIRE1       
+CONST KEY.F            
+CONST JOY1.FIRE2       
+CONST KEY.B            
+CONST JOY1.FIRE3       
+CONST KEY.V            
+CONST KEY.4            
+CONST KEY.3            
+CONST KEY.E            
+CONST KEY.W            
+CONST KEY.S            
+CONST KEY.D            
+CONST KEY.C            
+CONST KEY.X            
+CONST KEY.1            
+CONST KEY.2            
+CONST KEY.ESC          
+CONST KEY.Q            
+CONST KEY.TAB          
+CONST KEY.A            
+CONST KEY.CAPSLOCK     
+CONST KEY.Z            
+CONST JOY0.UP          
+CONST JOY0.DOWN        
+CONST JOY0.LEFT        
+CONST JOY0.RIGHT       
+CONST JOY0.FIRE1       
+CONST JOY0.FIRE2       
+CONST JOY0.FIRE3       
+CONST KEY.DEL          
+
+FUNCTION    cpctGetKeypressedAsASCII
+FUNCTION    cpctIsAnyKeyPressed
+FUNCTION    cpctIsAnyKeyPressedf
+FUNCTION    cpctIsKeyPressed(keyid)
+SUB         cpctScanKeyboard
+SUB         cpctScanKeyboardf
+SUB         cpctScanKeyboardi
+SUB         cpctScanKeyboardif
+```
+
+* `cpctelera/memutils`
+
+```basic
+SUB         cpctMemcpy(toptr, fromptr, bytes)
+SUB         cpctMemset(arrayptr, value, bytes)
+SUB         cpctMemsetf8(arrayptr, value, bytes)
+SUB         cpctMemsetf64(arrayptr, value, bytes)
+SUB         cpctMemsetf64i(arrayptr, value, bytes)
+SUB         cpctPageMemory(bankvalue)
+SUB         cpctSetStackLocation(halts)
+SUB         cpctWaitHalts(halts)
+```
+
+* `cpctelera/random`
+
+```basic
+SUB         cpctSRand(seed)
+FUNCTION    cpctRand
+```
+
+* `cpctelera/sprites`
+
+```basic
+const CPCTBLEND.XOR
+const CPCTBLEND.AND
+const CPCTBLEND.OR 
+const CPCTBLEND.ADD
+const CPCTBLEND.ADC
+const CPCTBLEND.SBC
+const CPCTBLEND.SUB
+const CPCTBLEND.LDI
+const CPCTBLEND.NOP
+
+SUB         cpctDrawSpriteBlended(vmem, w, h, sprite)
+SUB         cpctSetBlendMode(bmode) ASM
+
+SUB         cpctDrawSpriteColorizeM0(sprite, vmem, w, h, rplcpat)
+SUB         cpctDrawSpriteColorizeM1(sprite, vmem, w, h, rplcpat)
+SUB         cpctDrawSpriteMaskedAlignedColorizeM0(sprite, vmem, w, h, masktable, rplcpat)
+SUB         cpctDrawSpriteMaskedAlignedColorizeM1(sprite, vmem, w, h, masktable, rplcpat)
+SUB         cpctDrawSpriteMaskedColorizeM0(sprite, vmem, w, h, rplcpat)
+SUB         cpctDrawSpriteMaskedColorizeM1(sprite, vmem, w, h, rplcpat)
+
+SUB         cpctSpriteColorizeM0(rplcpat, size, sprite)
+SUB         cpctSpriteColorizeM1(rplcpat, size, sprite)
+SUB         cpctSpriteMaskedColorizeM0(rplcpat, size, sprite)
+SUB         cpctSpriteMaskedColorizeM1(rplcpat, size, sprite)
+
+SUB         cpctDrawTileAligned2x4f(tile, vmem)
+SUB         cpctDrawTileAligned2x8(tile, vmem)
+SUB         cpctDrawTileAligned2x8f(tile, vmem)
+SUB         cpctDrawTileAligned4x4f(tile, vmem)
+SUB         cpctDrawTileAligned4x8(tile, vmem)
+SUB         cpctDrawTileAligned4x8f(tile, vmem)
+SUB         cpctDrawTileGrayCode2x8af(tile, vmem)
+SUB         cpctDrawTileZigZagGrayCode4x8af(tile, vmem)
+
+SUB         cpctDrawToSpriteBuffer(bufferw, buffer, w, h, sprite)
+SUB         cpctDrawToSpriteBufferMasked(bufferw, buffer, w, h, sprite)
+SUB         cpctDrawToSpriteBufferMaskedAlignedTable(bufferw, buffer, w, h, sprite, masktable)
+
+SUB         cpctDrawSpriteHFlipM0(sprite, vmem, w, h)
+SUB         cpctDrawSpriteHFlipM1(sprite, vmem, w, h)
+SUB         cpctDrawSpriteHFlipM2(sprite, vmem, w, h)
+SUB         cpctDrawSpriteVFlip(sprite, vmem, w, h)
+SUB         cpctDrawSpriteVFlipMasked(sprite, vmem, w, h)
+FUNCTION    cpctGetBottomLeftPtr(vmem, h)
+SUB         cpctHFlipSpriteM0(w, h, sprite)
+SUB         cpctHfFlipSpriteM0r(sprite, w, h)
+SUB         cpctHFlipSpriteM1(w, h, sprite)
+SUB         cpctHFlipSpriteM1r(sprite, w, h)
+SUB         cpctHFlipSpriteM2(w, h, sprite)
+SUB         cpctHFlipSpriteM2r(sprite, w, h)
+SUB         cpctHFlipSpriteMaskedM0(w, h, sprite)
+SUB         cpctHFlipSpriteMaskedM1(w, h, sprite)
+SUB         cpctHFlipSpriteMaskedM2(w, h, sprite)
+
+SUB         cpctGetScreenToSprite(vmem, sprite, w, h)
+
+SUB         cpctDrawSolidBox(address, cpattern, w, h)
+SUB         cpctDrawSprite(sprite, videopos, spwidth, spheight)
+SUB         cpctDrawSpriteMasked(sprite, vmem, w, h)
+SUB         cpctDrawSpriteMaskedAlignedTable(sprite, vmem, w, h, masktable)
+FUNCTION    cpctPen2pixelPatternM0(pnum)
+FUNCTION    cpctPen2pixelPatternM1(pnum)
+FUNCTION    cpctPen2TwoPixelPatternM0(newpen, oldpen)
+FUNCTION    cpctPen2TwoPixelPatternM1(newpen, oldpen)
+FUNCTION    cpctpx2byteM0(px0, px1)
+FUNCTION    cpctpx2byteM1(px0, px1, px2, px3)
+```
+
+* `cpctelera/strings`
+
+```basic
+SUB         cpctDrawCharM0(vmem, chnum)
+SUB         cpctDrawCharM1(vmem, chnum)
+SUB         cpctDrawCharM2(vmem, chnum)
+SUB         cpctDrawStringM0(s$, vmem)
+SUB         cpctDrawStringM1(s$, vmem)
+SUB         cpctDrawStringM2(s$, vmem)
+SUB         cpctSetDrawCharM0(fg, bg)
+SUB         cpctSetDrawCharM1(fg, bg)
+SUB         cpctSetDrawCharM2(fg, bg)
+```
+
+* `cpctelera/video`
+
+```basic
+CONST CPCT.VMEMSTART
+CONST CPCT.VMEMSIZE
+
+CONST FWC.BLACK         
+CONST FWC.BLUE          
+CONST FWC.BRIGHTBLUE    
+CONST FWC.RED           
+CONST FWC.MAGENTA       
+CONST FWC.MAUVE         
+CONST FWC.BRIGHTRED     
+CONST FWC.PURPLE        
+CONST FWC.BRIGHTMAGENTA 
+CONST FWC.GREEN         
+CONST FWC.CYAN          
+CONST FWC.SKYBLUE       
+CONST FWC.YELLOW        
+CONST FWC.WHITE         
+CONST FWC.PASTELBLUE    
+CONST FWC.ORANGE        
+CONST FWC.PINK          
+CONST FWC.PASTERMAGENTA 
+CONST FWC.BRIGHTGREEN   
+CONST FWC.SEAGREEN      
+CONST FWC.BRIGHTCYAN    
+CONST FWC.LIME          
+CONST FWC.PASTELGREEN   
+CONST FWC.PASTELCYAN    
+CONST FWC.BRIGHTYELLOW  
+CONST FWC.PASTELYELLOW  
+CONST FWC.BRIGHTWHITE   
+
+CONST HWC.BLACK        
+CONST HWC.BLUE         
+CONST HWC.BRIGHTBLUE   
+CONST HWC.RED          
+CONST HWC.MAGENTA      
+CONST HWC.MAUVE        
+CONST HWC.BRIGHTRED    
+CONST HWC.PURPLE       
+CONST HWC.BRIGHTMAGENTA
+CONST HWC.GREEN        
+CONST HWC.CYAN         
+CONST HWC.SKYBLUE      
+CONST HWC.YELLOW       
+CONST HWC.WHITE        
+CONST HWC.PASTELBLUE   
+CONST HWC.ORANGE       
+CONST HWC.PINK         
+CONST HWC.PASTERMAGENTA
+CONST HWC.BRIGHTGREEN  
+CONST HWC.SEAGREEN     
+CONST HWC.BRIGHTCYAN   
+CONST HWC.LIME         
+CONST HWC.PASTELGREEN  
+CONST HWC.PASTELCYAN   
+CONST HWC.BRIGHTYELLOW 
+CONST HWC.PASTELYELLOW 
+CONST HWC.BRIGHTWHITE  
+
+CONST VMP.PAGEC0
+CONST VMP.PAGE80
+CONST VMP.PAGE40
+CONST VMP.PAGE00
+
+SUB         cpctClearScreen(color)
+SUB         cpctClearScreenf64(color)
+FUNCTION    cpctCount2VSYNC
+SUB         cpctFW2HW(paldir, items)
+FUNCTION    cpctGetHWColour(fwcol)
+FUNCTION    cpctGetScreenPtr(vstart, x, y)
+FUNCTION    cpctGetVSYNCStatus
+SUB         cpctSetBorder(hwcolor)
+SUB         cpctSetCRTCReg(regnum, newval)
+SUB         cpctSetPALColour(ipen, hwcolor)
+SUB         cpctSetPalette(palptr, items)
+SUB         cpctSetVideoMemoryOffset(offset)
+SUB         cpctSetVideoMemoryPage(pageid)
+SUB         cpctSetVideoMode(vmode)
+SUB         cpctWaitVSYNC
+SUB         cpctWaitVSYNCStart
+```
+
+---
+
+
+# Appendix V: CPCRSLIB
+
+`CPCRSlib` is a C library containing routines and functions that allow to the handling of sprites and tile-mapping in Amstrad CPC. The library is written to be used with Z88DK compiler or with SDCC complier.
+
+Last release of the library can be downloaded at:
+
+* [CPCRSlib Sourceforge page](https://sourceforge.net/p/cpcrslib/wiki/Home/)
+
+`ABASC` includes several adapted examples from the original `CPCRSlib` distribution. They can be found in the directory `examples/cpcrslib`.
+
+To incorporate the library to any `ABASC` project the user only need to reference the main module file with the following command:
+
+```basic
+chain merge "cpcrslib/cpcrslib.bas"
+```
+
+## CPCRSlib Constants and routines
+
+
+* `cpcrslib/firmware`
+
+```basic
+SUB rsDisableFirmware
+SUB rsEnableFirmware
+```
+
+* `cpcrslib/keyboard`
+
+```basic
+const RSKEY.EMPTY   
+const RSKEY.FDOT    
+const RSKEY.FENTER  
+const RSKEY.F3      
+const RSKEY.F6      
+const RSKEY.F9      
+const RSKEY.DOWN    
+const RSKEY.RIGHT   
+const RSKEY.UP      
+const RSKEY.F0      
+const RSKEY.F2      
+const RSKEY.F1      
+const RSKEY.F5      
+const RSKEY.F8      
+const RSKEY.F7      
+const RSKEY.COPY    
+const RSKEY.LEFT    
+const RSKEY.CTRL    
+const RSKEY.BSLASH  
+const RSKEY.SHIFT   
+const RSKEY.F4      
+const RSKEY.RSQUARE 
+const RSKEY.RETURN  
+const RSKEY.LSQUARE 
+const RSKEY.CLR     
+const RSKEY.DOT     
+const RSKEY.FSLASH  
+const RSKEY.COLON   
+const RSKEY.SCOLON  
+const RSKEY.P       
+const RSKEY.AT      
+const RSKEY.MINUS   
+const RSKEY.EXP     
+const RSKEY.COMMA   
+const RSKEY.M       
+const RSKEY.K       
+const RSKEY.L       
+const RSKEY.I       
+const RSKEY.O       
+const RSKEY.9       
+const RSKEY.0       
+const RSKEY.SPACE   
+const RSKEY.N       
+const RSKEY.J       
+const RSKEY.H       
+const RSKEY.Y       
+const RSKEY.U       
+const RSKEY.7       
+const RSKEY.8       
+const RSKEY.V       
+const RSKEY.B       
+const RSKEY.F       
+const RSKEY.G       
+const RSKEY.T       
+const RSKEY.R       
+const RSKEY.5       
+const RSKEY.6       
+const RSKEY.J2FIRE3 
+const RSKEY.J2FIRE2 
+const RSKEY.J2FIRE1 
+const RSKEY.J2RIGHT 
+const RSKEY.J2LEFT  
+const RSKEY.J2DOWN  
+const RSKEY.J2UP    
+const RSKEY.X       
+const RSKEY.C       
+const RSKEY.D       
+const RSKEY.S       
+const RSKEY.W       
+const RSKEY.E       
+const RSKEY.3       
+const RSKEY.4       
+const RSKEY.Z       
+const RSKEY.CAPS    
+const RSKEY.A       
+const RSKEY.TAB     
+const RSKEY.Q       
+const RSKEY.ESC     
+const RSKEY.2       
+const RSKEY.1       
+const RSKEY.DEL     
+const RSKEY.J1FIRE3 
+const RSKEY.J1FIRE2 
+const RSKEY.J1FIRE1 
+const RSKEY.J1RIGHT 
+const RSKEY.J1LEFT  
+const RSKEY.J1DOWN  
+const RSKEY.J1UP    
+
+const RSKB.LINE1    
+const RSKB.LINE2    
+const RSKB.LINE3    
+const RSKB.LINE4    
+const RSKB.LINE5    
+const RSKB.LINE6    
+const RSKB.LINE7    
+const RSKB.LINE8    
+const RSKB.LINE9    
+const RSKB.LINE10   
+
+FUNCTION        rsAnyKeyPressed
+SUB             rsAssignKey(entry, keyid)
+SUB             rsDeleteKeys
+SUB             rsRedefineKey(entry)
+SUB             rsScanKeyboard
+FUNCTION        rsTestKey(entry)
+FUNCTION        rsTestKeyF(entry)
+FUNCTION        rsTestKeyboard(kbline)
+```
+
+* `cpcrslib/player`
+
+```basic
+const RSCH.A
+const RSCH.B
+const RSCH.C
+
+SUB         rsWyzConfigurePlayer(bitflags)
+SUB         rsWyzInitPlayer(songstable, effectstable, rulestable, soundstable)
+SUB         rsWyzLoadSong(song)
+SUB         rsWyzSetTempo(tempo)
+SUB         rsWyzStartEffect(channel, effect)
+FUNCTION    rsWyzTestPlayer
+SUB         rsWyzSetPlayerOn
+SUB         rsWyzSetPlayerOff
+```
+
+* `cpcrslib/sprite`
+
+```basic
+const RSPRITE.SIZE = 14
+RECORD rssp; sp0, sp1, vmem0, vmem1, cpos, opos, movdir
+
+FUNCTION    rsCollSp(sprite1$, sprite2$)
+
+SUB         rsGetSp(buf, w, h, vmem)
+SUB         rsGetSpXY(buf, w, h, x, y)
+
+SUB         rsPutSp(sprite, w, h, vmem)
+SUB         rsPutSpXY(sprite, w, h, x, y)
+SUB         rsPutSpXOR(sprite, w, h, vmem)
+SUB         rsPutSpXORXY(sprite, w, h, x, y)
+```
+
+* `cpcrslib/text`
+
+```basic
+SUB         rsPrintGphStrStd(npen, text$, vmem)
+SUB         rsPrintGphStrStdXY(npen, text$, x, y)
+
+SUB         rsPrintGphStrM0(text$, vmem)
+SUB         rsPrintGphStrXYM0(text$, x, y)
+SUB         rsPrintGphStrM0x2(text$, vmem)
+SUB         rsPrintGphStrXYM0x2(text$, x, y)
+
+SUB         rsPrintGphStrM1(text$, vmem)
+SUB         rsPrintGphStrXYM1(text$, x, y)
+SUB         rsPrintGphStrM1x2(text$, vmem)
+SUB         rsPrintGphStrXYM1x2(text$, x, y)
+
+const RSTXT0.PEN0  
+const RSTXT0.PEN1  
+const RSTXT0.PEN2  
+const RSTXT0.PEN3  
+const RSTXT0.PEN4  
+const RSTXT0.PEN5  
+const RSTXT0.PEN6  
+const RSTXT0.PEN7  
+const RSTXT0.PEN8  
+const RSTXT0.PEN9  
+const RSTXT0.PEN10 
+const RSTXT0.PEN11 
+const RSTXT0.PEN12 
+const RSTXT0.PEN13 
+const RSTXT0.PEN14 
+const RSTXT0.PEN15 
+
+SUB rsSetInkGphStrM0(indind, color)
+
+const RSTXT1.PEN0 
+const RSTXT1.PEN1 
+const RSTXT1.PEN2 
+const RSTXT1.PEN3 
+
+SUB rsSetInkGphStrM1(indind, color)
+```
+
+* `cpcrslib/tilemap`
+
+```basic
+SUB         rsInitTileMap
+SUB         rsSetTile(x, y, tile)
+FUNCTION    rsReadTile(x, y)
+SUB         rsShowTileMap
+SUB         rsShowTileMap2
+SUB         rsResetTouchedTiles
+SUB         rsPutSpTileMap(rssprite$)
+SUB         rsUpdScr
+SUB         rsPutSpTileMap2b(rssprite$)
+SUB         rsPutMaskSpTileMap2b(rssprite$)
+SUB         rsUpdTileTable(x, y)
+FUNCTION    rsGetDoubleBufferAddress(x, y)
+SUB         rsScrollLeft00
+SUB         rsScrollRight00
+```
+
+* `cpcrslib/utils`
+
+```basic
+SUB         rsPause(halts)
+FUNCTION    rsRandom
+SUB         rsWaitVSync
+```
+
+* `cpcrslib/video`
+
+```basic
+CONST RSFW.BLACK        
+CONST RSFW.BLUE         
+CONST RSFW.BRIGHTBLUE   
+CONST RSFW.RED          
+CONST RSFW.MAGENTA      
+CONST RSFW.MAUVE        
+CONST RSFW.BRIGHTRED    
+CONST RSFW.PURPLE       
+CONST RSFW.BRIGHTMAGENTA
+CONST RSFW.GREEN        
+CONST RSFW.CYAN         
+CONST RSFW.SKYBLUE      
+CONST RSFW.YELLOW       
+CONST RSFW.WHITE        
+CONST RSFW.PASTELBLUE   
+CONST RSFW.ORANGE       
+CONST RSFW.PINK         
+CONST RSFW.PASTERMAGENTA
+CONST RSFW.BRIGHTGREEN  
+CONST RSFW.SEAGREEN     
+CONST RSFW.BRIGHTCYAN   
+CONST RSFW.LIME         
+CONST RSFW.PASTELGREEN  
+CONST RSFW.PASTELCYAN   
+CONST RSFW.BRIGHTYELLOW 
+CONST RSFW.PASTELYELLOW 
+CONST RSFW.BRIGHTWHITE  
+
+CONST RSHW.BLACK        
+CONST RSHW.BLUE         
+CONST RSHW.BRIGHTBLUE   
+CONST RSHW.RED          
+CONST RSHW.MAGENTA      
+CONST RSHW.MAUVE        
+CONST RSHW.BRIGHTRED    
+CONST RSHW.PURPLE       
+CONST RSHW.BRIGHTMAGENTA
+CONST RSHW.GREEN        
+CONST RSHW.CYAN         
+CONST RSHW.SKYBLUE      
+CONST RSHW.YELLOW       
+CONST RSHW.WHITE        
+CONST RSHW.PASTELBLUE   
+CONST RSHW.ORANGE       
+CONST RSHW.PINK         
+CONST RSHW.PASTERMAGENTA
+CONST RSHW.BRIGHTGREEN  
+CONST RSHW.SEAGREEN     
+CONST RSHW.BRIGHTCYAN   
+CONST RSHW.LIME         
+CONST RSHW.PASTELGREEN  
+CONST RSHW.PASTELCYAN   
+CONST RSHW.BRIGHTYELLOW 
+CONST RSHW.PASTELYELLOW 
+CONST RSHW.BRIGHTWHITE   
+
+SUB         rsClrScr
+FUNCTION    rsGetScrAddress(x, y)
+SUB         rsRLI(vmem, w, h)
+SUB         rsRRI(vmem, w, h)
+SUB         rsSetColour(npen, hwcolour)
+SUB         rsSetMode(nmode)
+```
+
+---
+
+# Appendix VI: Installing the Visual Code Extension
+
+`ABASC` includes a separate extension for Visual Code: `abascbasic-1.0.0.vsix`. The extension allows Visual Code users to enjoy syntax highlighting, including all reserved words from Locomotive BASIC versions 1.0 and 1.1 but also from Locomotive BASIC version 2 and version 2 plus.
+
+## Installation
+
+1. Launch VS Code Command Palette (Ctrl+Shift+P)
+2. Type install extension from Location
+3. Select the `abascbasic` VSIX file.
+
+---
+
+# Changelog
+
+* Version 1.0.3
+  - Generates intermediate files along the destination file instead of the source file.
+  - Fixes a problem with paths containing the substring 'BAS'.
+  - FOR index variables could be optimized as const by mistake.
+  - Includes a new example: examples/cpctelera/games/runner
+  - New automated tests to check the code emitter.
+
+* Version 1.0.2
+  - CONST variables were not working properly in DIM and FIXED statements.
+  - Fixes a typo in cpctelera/sprites.bas
+
+* Version 1.0.1
+  - Improvements in the handling of CONST variables
+  - Doublecheck of all examples on MacOS
+
+* Version 1.0.0
+  - Supports Locomotive BASIC 1.0 and 1.1 syntax
+  - Supports real numbers
+  - Supports Locomotive BASIC 2 and BASIC 2 plus syntax
+    * LABEL, SUB, FUNCTION, SELECT CASE, etc.
+  - Allows embedding assembly code using the ASM command
+  - Includes adapted versions of the CPCTELERA and CPCRSLIB libraries
+  - Includes multiple examples to test the compiler
+  - Includes several additional tools to create DSK, CDT files, or convert images
+  - Includes a syntax highlighting plug-in for Visual Code (abasc-vscode.vsix)
+  - Limitations:
+    * Arrays always start at 0
+    * Only integer numbers can be used as indices in array declarations
+    * USING command patterns are not supported

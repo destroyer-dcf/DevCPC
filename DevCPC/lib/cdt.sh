@@ -17,14 +17,11 @@
 # ------------------------------
 # CDT="${PROJECT_NAME}.cdt"              # Nombre del archivo CDT
 # CDT_FILES="loader.bas 8BP0.bin main.bin"  # Orden de archivos
-# RUN_MODE="auto"                        # o "dsk" o "cdt"
 #
 # USO:
 # ----
 # devcpc build                  # Crea DSK y CDT si está configurado
-# devcpc run                    # Ejecuta según RUN_MODE (auto detecta CDT)
-# devcpc run --dsk              # Fuerza ejecución desde DSK
-# devcpc run --cdt              # Fuerza ejecución desde CDT (con -p auto-play)
+# devcpc run                    # Ejecuta CDT si CPC_MODEL=464, DSK si 664/6128
 #
 # TIPOS DE ARCHIVOS:
 # ------------------
@@ -135,8 +132,8 @@ create_cdt() {
             return 1
         fi
         
-        # Extraer nombre sin extensión y convertir a mayúsculas
-        local name_upper=$(basename "$filename" | sed 's/\.[^.]*$//' | tr '[:lower:]' '[:upper:]')
+        # Convertir nombre a mayúsculas manteniendo la extensión
+        local name_upper=$(basename "$filename" | tr '[:lower:]' '[:upper:]')
         
         # Determinar cómo añadir según el tipo
         local add_result
