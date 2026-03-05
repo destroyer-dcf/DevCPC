@@ -197,16 +197,22 @@ validate_project() {
     # Validar emulador
     step "Validando emulador..."
     
-    if [[ -z "$RVM_PATH" ]]; then
-        warning "RVM_PATH no configurado - No hay emulador configurado para probar"
-        ((warnings++))
-    else
-        if [[ -f "$RVM_PATH" ]]; then
+    if [[ "$EMULATOR_TYPE" == "integrated" ]]; then
+        success "EMULATOR_TYPE: integrated (se lanza desde VS Code Task Explorer)"
+    elif [[ "$EMULATOR_TYPE" == "rvm" ]]; then
+        success "EMULATOR_TYPE: rvm"
+        if [[ -z "$RVM_PATH" ]]; then
+            error "RVM_PATH no configurado (requerido cuando EMULATOR_TYPE=rvm)"
+            ((errors++))
+        elif [[ -f "$RVM_PATH" ]]; then
             success "RVM_PATH: $RVM_PATH"
         else
-            warning "RVM_PATH configurado pero el archivo no existe: $RVM_PATH"
-            ((warnings++))
+            error "RVM_PATH configurado pero el archivo no existe: $RVM_PATH"
+            ((errors++))
         fi
+    else
+        warning "EMULATOR_TYPE no configurado o valor desconocido: '$EMULATOR_TYPE'"
+        ((warnings++))
     fi
     
     echo ""
