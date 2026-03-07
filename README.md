@@ -7,8 +7,8 @@
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE.md)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows%20WSL-lightgrey.svg)]()
 [![Python](https://img.shields.io/badge/python-3.x-blue.svg)](https://www.python.org/)
-[![ABASM](https://img.shields.io/badge/ABASM-1.4.0-green.svg)](https://github.com/fragarco/abasm)
-[![ABASC](https://img.shields.io/badge/ABASC-1.0.2-yellow.svg)](https://github.com/fragarco/abasc)
+[![ABASM](https://img.shields.io/badge/ABASM-1.4.1-green.svg)](https://github.com/fragarco/abasm)
+[![ABASC](https://img.shields.io/badge/ABASC-1.0.3-yellow.svg)](https://github.com/fragarco/abasc)
 [![Amstrad CPC](https://img.shields.io/badge/Amstrad-CPC-red.svg)]()
 [![8BP](https://img.shields.io/badge/8BP-v0.43-purple.svg)](https://github.com/jjaranda13/8BP)
 
