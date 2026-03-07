@@ -8,6 +8,7 @@
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows%20WSL-lightgrey.svg)]()
 [![Python](https://img.shields.io/badge/python-3.x-blue.svg)](https://www.python.org/)
 [![ABASM](https://img.shields.io/badge/ABASM-1.4.0-green.svg)](https://github.com/fragarco/abasm)
+[![ABASC](https://img.shields.io/badge/ABASC-1.0.2-yellow.svg)](https://github.com/fragarco/abasc)
 [![Amstrad CPC](https://img.shields.io/badge/Amstrad-CPC-red.svg)]()
 [![8BP](https://img.shields.io/badge/8BP-v0.43-purple.svg)](https://github.com/jjaranda13/8BP)
 
@@ -35,11 +36,12 @@ Esta idea nace de la necesidad de poder compilar la librería [8BP](https://gith
 - ✅ **PANTALLAS DE CARGA** - Creacion de pantallas de cargar desde una imagen png
 - ✅ **SPRITES** - Creacion de sprites desde una imagen png
 - ✅ **CREACION DE PROYECTOS** - Creacion de proyectos con ejemplos Basic, ASM o 8BP
-- ✅ **EXTENSION VSCODE** - Extension para Visual Studio Code, que facilita el trabajo de compilacion.
+- ✅ **EXTENSION VSCODE** - Extension para Visual Studio Code, que facilita el trabajo de compilacion y configuracion. Incluye Emulador en el IDE
 
 
 ### Herramientas integradas
 - ✅ **[ABASM](https://github.com/fragarco/abasm)** - Ensamblador para Z80
+- ✅ **[ABASC](https://github.com/fragarco/abasc)** - Compilador Cruzado para Basic
 - ✅ **[dsk.py](https://github.com/fragarco/abasm)** - Gestión de imágenes DSK
 - ✅ **[cdt.py](https://github.com/fragarco/abasm)** - Gestión de imágenes CDT (cintas)
 - ✅ **[map.py](https://github.com/fragarco/abasm)** - Gestión de archivos de configuración INI
@@ -56,6 +58,85 @@ Esta idea nace de la necesidad de poder compilar la librería [8BP](https://gith
 - ✅ macOS (ARM64 y x86_64)
 - ✅ Linux (ARM64 y x86_64)
 - ✅ Windows (WSL o Git Bash)
+
+## 🤖 Agente IA para DevCPC
+
+DevCPC incluye un **agente IA especializado** que se integra con **GitHub Copilot** en VS Code. El agente te asiste en:
+
+- 🎯 **Configuración de proyectos** - Ayuda con `devcpc.conf`, niveles de build, rutas
+- 🔧 **Troubleshooting** - Diagnóstico de errores de compilación y memoria
+- 📚 **Documentación interactiva** - Explica comandos, opciones y conceptos
+- 💡 **Mejores prácticas** - Sugerencias de optimización y estructura
+- 🎨 **Conversión de gráficos** - Asistencia con sprites y pantallas
+- 📦 **Generación DSK/CDT/CPR** - Configuración de medios de distribución
+
+### 🚀 Instalación del Agente
+
+**Requisito**: GitHub Copilot instalado en VS Code (v1.106+)
+
+#### Opción 1: A nivel de proyecto (automático)
+
+El agente ya está incluido en `.github/agents/devcpc-agent.agent.md`. Al abrir un proyecto DevCPC:
+1. VS Code detecta el agente automáticamente
+2. Abre el Chat de Copilot (`Ctrl+Alt+I` / `Cmd+Alt+I`)
+3. Selecciona "DevCPC-Agent" del selector de agentes
+4. ¡Listo para usar!
+
+#### Opción 2: Instalación global (una sola vez)
+
+Para que funcione en **todos** tus proyectos DevCPC:
+
+```bash
+# Recomendado (instala agente + skills globales)
+.github/install-agent.sh
+
+# Manual:
+mkdir -p ~/.devcpc/agents ~/.copilot/skills
+cp .github/agents/devcpc-agent.agent.md ~/.devcpc/agents/
+cp -R .github/skills/* ~/.copilot/skills/
+```
+
+Añade en tu **settings.json global** (NO en `.vscode/settings.json`):
+```json
+{
+  "chat.agentFilesLocations": [
+    "~/.devcpc/agents"
+  ]
+}
+```
+
+> **Importante**: 
+> - Usa el **settings.json GLOBAL** (acceso: Cmd+Shift+P → "Open User Settings JSON")
+> - Para MCP usa `.vscode/mcp.json` (o configuración global MCP), no `mcp.servers` en settings.json
+> - Las skills globales se cargan desde `~/.copilot/skills`
+
+**📖 Guía completa**: [Instalación Global del Agente](.github/AGENT_INSTALLATION.md) (incluye diferencias entre settings global vs proyecto)
+
+### 💬 Cómo usar el Agente
+
+**En el Chat de Copilot:**
+
+```
+@DevCPC-Agent ¿Cómo creo un juego de plataformas con 8BP?
+
+@DevCPC-Agent Mi código excede el límite de memoria, ¿qué hago?
+
+@DevCPC-Agent ¿Cómo genero una cinta CDT con mi loader BASIC?
+
+@DevCPC-Agent Error: "_END_GRAPH excede 42040"
+```
+
+O simplemente pregunta directamente (si DevCPC-Agent es el agente activo):
+```
+¿Qué significa BUILD_LEVEL=2?
+Dame un ejemplo de devcpc.conf para un shooter
+```
+
+### 📚 Documentación del Agente
+
+- [Archivo del agente](.github/agents/devcpc-agent.agent.md) - Definición completa
+- [Guía de instalación global](.github/AGENT_INSTALLATION.md) - Configuración paso a paso
+- [Custom Agents en VS Code](https://code.visualstudio.com/docs/copilot/customization/custom-agents) - Documentación oficial
 
 ## 📦 Requisitos
 - **Python 3.x** (para scripts)
@@ -228,18 +309,35 @@ devcpc run
 
 ## 📚 Comandos Disponibles
 
-### `devcpc new <nombre>`
+### `devcpc new <nombre> [--template=<tipo>]`
 Crea un nuevo proyecto con estructura completa.
 
+**Opciones de template:**
+- `--template=8bp` → Proyecto con librería 8BP (ASM + BASIC + sprites + música)
+- `--template=asm` → Proyecto ensamblador puro (solo ASM sin 8BP)
+- `--template=basic` → Proyecto BASIC puro (defecto si no se especifica)
+
+**Ejemplos:**
+
 ```bash
+# Crear proyecto BASIC (defecto)
 devcpc new mi-super-juego
+
+# Crear proyecto con 8BP
+devcpc new mi-plataformas --template=8bp
+
+# Crear proyecto ASM puro
+devcpc new mi-demo --template=asm
 ```
 
 **Crea:**
-- Directorios: `ASM/`, `bas/`, `obj/`, `dist/`, `assets/sprites/`, `assets/screen/`
-- Archivo de configuración: `devcpc.conf`
-- `README.md` con instrucciones
+- Directorios según el template elegido
+- Archivo de configuración: `devcpc.conf` preconfigurado
+- `README.md` con instrucciones específicas del template
 - `.gitignore` configurado
+- `.github/agents/` (agentes IA de GitHub Copilot)
+
+> **Nota:** Si tienes instalada la carpeta de agentes en `~/.devcpc/agents/`, se copiará automáticamente toda la carpeta al nuevo proyecto para que puedas usar comandos como `@DevCPC-Agent` en GitHub Copilot. Esto permite tener todos los agentes disponibles en cada proyecto.
 
 ---
 
@@ -489,6 +587,33 @@ PROJECT_NAME="MI_JUEGO"
 # Nivel de compilación (0-4)
 BUILD_LEVEL=0
 ```
+
+### ⚠️ Dependencias de Variables
+
+Algunas variables de configuración son **dependientes entre sí** y deben estar configuradas juntas. Si defines una, debes definir la otra:
+
+#### 1. Cartuchos CPR
+```bash
+CPR="${PROJECT_NAME}.cpr"     # Nombre del cartucho
+CPR_EXECUTE="loader.bas"      # Archivo a ejecutar
+```
+**Ambas variables son obligatorias** si quieres generar un cartucho CPR.
+
+#### 2. Compilación BASIC con ABASC
+```bash
+BAS_SOURCE="main.bas"         # Archivo .bas a compilar
+BAS_LOADADDR="0x170"          # Dirección de carga
+```
+**Ambas variables son obligatorias** si quieres compilar un archivo BASIC a binario.
+
+#### 3. Compilación ASM pura (sin 8BP)
+```bash
+LOADADDR=0x1200               # Dirección de carga
+SOURCE="main"                 # Archivo fuente (sin .asm)
+```
+**Ambas variables son obligatorias** para proyectos ASM sin 8BP (cuando no usas `BUILD_LEVEL`).
+
+> **Nota:** La validación (`devcpc validate`) verificará estas dependencias y mostrará errores si solo defines una variable de cada par.
 
 ### Niveles de compilación 8BP
 
@@ -1609,63 +1734,81 @@ La documentación completa de 8BP está en el [repositorio oficial de 8BP](https
 ### Ejemplo 1: Proyecto solo ASM
 
 ```bash
-# Crear proyecto
-devcpc new juego-asm
+# Crear proyecto ASM puro
+devcpc new juego-asm --template=asm
 cd juego-asm
 
-# Configurar (devcpc.conf)
-PROJECT_NAME="juego-asm"
-BUILD_LEVEL=0
-ASM_PATH="ASM"
+# Configurar (devcpc.conf) - ya viene preconfigurado
+# PROJECT_NAME="juego-asm"
+# LOADADDR=0x1200
+# SOURCE="main"
 
 # Copiar código
-cp /ruta/a/make_all_mygame.asm ASM/
+cp /ruta/a/main.asm src/
 
 # Compilar
 devcpc build
 ```
 
-### Ejemplo 2: Proyecto ASM + BASIC
+### Ejemplo 2: Proyecto 8BP completo
 
 ```bash
-# Crear proyecto
-devcpc new juego-completo
+# Crear proyecto con librería 8BP
+devcpc new juego-completo --template=8bp
 cd juego-completo
 
-# Configurar
-PROJECT_NAME="juego-completo"
-BUILD_LEVEL=0
-ASM_PATH="ASM"
-BASIC_PATH="bas"
+# Viene preconfigurado con:
+# - BUILD_LEVEL=0
+# - ASM_PATH="asm/make_all_mygame.asm"
+# - BASIC_PATH="bas"
+# - Soporte para sprites, pantallas, música, C
 
 # Copiar archivos
-cp /ruta/a/*.asm ASM/
+cp /ruta/a/*.asm asm/
 cp /ruta/a/*.bas bas/
 
 # Compilar
 devcpc build
 ```
 
-### Ejemplo 3: Proyecto con C
+### Ejemplo 3: Proyecto BASIC puro
 
 ```bash
-# Crear proyecto
-devcpc new juego-c
+# Crear proyecto BASIC (defecto)
+devcpc new mi-aventura
+cd mi-aventura
+
+# Viene preconfigurado con:
+# - BASIC_PATH="src"
+# - Sin ASM ni C por defecto
+
+# Crear tu código BASIC
+cat > src/loader.bas << 'EOF'
+10 MODE 0
+20 PRINT "Hola CPC!"
+EOF
+
+# Compilar
+devcpc build
+```
+
+### Ejemplo 4: Proyecto con C
+
+```bash
+# Crear proyecto 8BP (incluye soporte para C)
+devcpc new juego-c --template=8bp
 cd juego-c
 
-# Configurar
-PROJECT_NAME="juego-c"
-BUILD_LEVEL=0
-ASM_PATH="ASM"
-C_PATH="C"
-C_SOURCE="main.c"
-C_CODE_LOC=20000
+# Viene preconfigurado con:
+# - BUILD_LEVEL=0
+# - C_PATH="c"
+# - C_SOURCE="ciclo.c"
+# - C_CODE_LOC=20000
 
 # Copiar archivos
-cp /ruta/a/*.asm ASM/
-cp /ruta/a/main.c C/
-cp -r /ruta/a/8BP_wrapper C/
-cp -r /ruta/a/mini_BASIC C/
+cp /ruta/a/main.c c/
+cp -r /ruta/a/8BP_wrapper c/
+cp -r /ruta/a/mini_BASIC c/
 
 # Compilar
 devcpc build
@@ -1715,7 +1858,9 @@ code --install-extension devcpc.devcpc-tasks
 
 ---
 
-## �📄 Licencia
+---
+
+## 📄 Licencia
 
 MIT License - Copyright (c) 2026 Destroyer
 

@@ -6,15 +6,37 @@
 # ==============================================================================
 
 new_project() {
-    local project_name="$1"
+    local project_name=""
+    local template_type="basic"  # Valor por defecto
+    
+    # Parsear argumentos
+    for arg in "$@"; do
+        case "$arg" in
+            --template=*)
+                template_type="${arg#*=}"
+                ;;
+            *)
+                if [[ -z "$project_name" ]]; then
+                    project_name="$arg"
+                fi
+                ;;
+        esac
+    done
     
     if [[ -z "$project_name" ]]; then
         error "Debes especificar un nombre para el proyecto"
         echo ""
-        echo "Uso: devcpc new <nombre>"
+        echo "Uso: devcpc new <nombre> [--template=<tipo>]"
         echo ""
-        echo "Ejemplo:"
+        echo "Opciones de template:"
+        echo "  --template=8bp       Proyecto con librería 8BP (ASM + BASIC + sprites + música)"
+        echo "  --template=asm       Proyecto ensamblador puro"
+        echo "  --template=basic     Proyecto BASIC puro (defecto)"
+        echo ""
+        echo "Ejemplos:"
         echo "  devcpc new mi-juego"
+        echo "  devcpc new mi-juego --template=8bp"
+        echo "  devcpc new mi-juego --template=asm"
         exit 1
     fi
     
@@ -30,43 +52,37 @@ new_project() {
         exit 1
     fi
     
-    header "Crear Nuevo Proyecto"
-    
-    info "Nombre del proyecto: $project_name"
-    echo ""
-    
-    # Preguntar tipo de proyecto
-    echo -e "${CYAN}¿Qué tipo de proyecto deseas crear?${NC}"
-    echo ""
-    echo "  1) 8BP       - Proyecto con librería 8BP (ASM + BASIC + sprites + música)"
-    echo "  2) BASIC     - Proyecto BASIC puro (solo BASIC + recursos)"
-    echo "  3) ASM       - Proyecto ASM sin 8bp (solo ensamblador + recursos)"
-    echo ""
-    echo -ne "${YELLOW}Selecciona una opción [1-3]:${NC} "
-    
-    local project_type
-    read -r project_type
-    
-    # Validar selección
+    # Validar template
     local template_dir
-    case "$project_type" in
-        1)
+    case "$template_type" in
+        8bp)
             template_dir="8bp"
-            info "Tipo seleccionado: 8BP"
             ;;
-        2)
-            template_dir="basic"
-            info "Tipo seleccionado: BASIC"
-            ;;
-        3)
+        asm)
             template_dir="asm"
-            info "Tipo seleccionado: ASM"
+            ;;
+        basic)
+            template_dir="basic"
             ;;
         *)
-            error "Opción inválida. Usa 1, 2 o 3"
+            error "Template inválido: '$template_type'"
+            echo ""
+            echo "Templates disponibles: 8bp, asm, basic"
             exit 1
             ;;
     esac
+    
+    header "Crear Nuevo Proyecto"
+    
+    info "Nombre del proyecto: $project_name"
+    info "Tipo seleccionado: ${template_dir^^}"
+    
+    # Mostrar aviso si se usa el template por defecto
+    if [[ "$template_type" == "basic" ]] && [[ ! "$*" =~ --template ]]; then
+        echo ""
+        echo -e "${YELLOW}ℹ  Usando template por defecto: BASIC${NC}"
+        echo -e "${YELLOW}   (Usa --template=8bp o --template=asm para otros tipos)${NC}"
+    fi
     
     echo ""
     
@@ -346,9 +362,9 @@ devcpc validate
 Para usar \`devcpc run\`, configura en \`devcpc.conf\`:
 
 \`\`\`bash
+EMULATOR_TYPE="rvm"  # "integrated" (VS Code) o "rvm" (RetroVirtualMachine)
 RVM_PATH="/ruta/a/RetroVirtualMachine"
-CPC_MODEL=464        # o 664, 6128
-RUN_MODE="auto"      # auto, dsk o cdt
+CPC_MODEL=464        # 464 → CDT | 664/6128 → DSK
 \`\`\`
 
 ## 🔄 Conversión entre Tipos de Proyecto
@@ -401,6 +417,21 @@ src/sprites.asm
 Thumbs.db
 EOF
     success ".gitignore creado"
+    
+    # Copiar carpeta de agentes DevCPC si existe
+    step "Configurando agentes DevCPC..."
+    local agent_source_dir="$HOME/.devcpc/agents"
+    local agent_target_dir="$project_name/.github/agents"
+    
+    if [[ -d "$agent_source_dir" ]] && [[ -n "$(ls -A "$agent_source_dir" 2>/dev/null)" ]]; then
+        mkdir -p "$project_name/.github"
+        cp -r "$agent_source_dir" "$agent_target_dir"
+        local agent_count=$(find "$agent_target_dir" -name "*.agent.md" -type f | wc -l | tr -d ' ')
+        success "Agentes IA DevCPC configurados ($agent_count agente(s) en .github/agents/)"
+    else
+        warning "No se encontró la carpeta de agentes en ~/.devcpc/agents/"
+        echo "         Para instalarlos, ejecuta: cd .github && ./install-agent.sh"
+    fi
     
     echo ""
     success "Proyecto '$project_name' ($template_dir) creado exitosamente!"
